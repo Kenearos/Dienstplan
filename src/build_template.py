@@ -261,7 +261,7 @@ def _populate_checks(ws):
     for row in range(2, 52):
         date_ref = f"A{row}"
         ws[f"B{row}"] = f'=WENN({date_ref}="";"";SUMMENPRODUKT((tblPlan[Datum]={date_ref})*(tblPlan[Anteil])))'
-        ws[f"C{row}"] = f'=WENN({date_ref}="";""WENN(ABS(B{row}-1)<=0,0001;"OK";"FEHLER"))'
+        ws[f"C{row}"] = f'=WENN({date_ref}="";"";WENN(ABS(B{row}-1)<=0,0001;"OK";"FEHLER"))'
     
     ws.column_dimensions["A"].width = 14
     ws.column_dimensions["B"].width = 16
