@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dienstplan NRW</string>
+    
+    <!-- Main Activity -->
+    <string name="main_title">Dienstplan Generator</string>
+    <string name="select_month">Monat auswählen</string>
+    <string name="enter_duties">Dienste eintragen</string>
+    <string name="view_results">Auswertung anzeigen</string>
+    <string name="month_year_format">%s %d</string>
+    
+    <!-- Duty Entry Activity -->
+    <string name="duty_entry_title">Dienste eintragen</string>
+    <string name="employee_name">Mitarbeiter</string>
+    <string name="duty_share">Anteil (0.0 - 1.0)</string>
+    <string name="add_duty">Dienst hinzufügen</string>
+    <string name="save_duties">Dienste speichern</string>
+    <string name="date_label">Datum</string>
+    
+    <!-- Results Activity -->
+    <string name="results_title">Auswertung</string>
+    <string name="wt_units">WT Einheiten</string>
+    <string name="we_friday">WE Freitag</string>
+    <string name="we_other">WE Andere</string>
+    <string name="we_total">WE Gesamt</string>
+    <string name="threshold_reached">Schwelle erreicht</string>
+    <string name="payout_wt">Auszahlung WT</string>
+    <string name="payout_we">Auszahlung WE</string>
+    <string name="payout_total">Auszahlung Gesamt</string>
+    <string name="yes">JA</string>
+    <string name="no">NEIN</string>
+    <string name="euro">€</string>
+    
+    <!-- Common -->
+    <string name="cancel">Abbrechen</string>
+    <string name="ok">OK</string>
+    <string name="delete">Löschen</string>
+    <string name="edit">Bearbeiten</string>
+    
+    <!-- Months -->
+    <string name="january">Januar</string>
+    <string name="february">Februar</string>
+    <string name="march">März</string>
+    <string name="april">April</string>
+    <string name="may">Mai</string>
+    <string name="june">Juni</string>
+    <string name="july">Juli</string>
+    <string name="august">August</string>
+    <string name="september">September</string>
+    <string name="october">Oktober</string>
+    <string name="november">November</string>
+    <string name="december">Dezember</string>
+    
+    <!-- Errors -->
+    <string name="error_invalid_share">Anteil muss zwischen 0.0 und 1.0 liegen</string>
+    <string name="error_empty_name">Bitte Mitarbeiternamen eingeben</string>
+    <string name="error_no_month_selected">Bitte wählen Sie einen Monat aus</string>
+    
+    <!-- String Arrays -->
+    <string-array name="months">
+        <item>@string/january</item>
+        <item>@string/february</item>
+        <item>@string/march</item>
+        <item>@string/april</item>
+        <item>@string/may</item>
+        <item>@string/june</item>
+        <item>@string/july</item>
+        <item>@string/august</item>
+        <item>@string/september</item>
+        <item>@string/october</item>
+        <item>@string/november</item>
+        <item>@string/december</item>
+    </string-array>
+</resources>
