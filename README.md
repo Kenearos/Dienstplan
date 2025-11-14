@@ -1,27 +1,30 @@
-# Excel XLSX Generator
+# Dienstplan Generator (NRW - Variante 2)
 
-Ein Python-Projekt zum Erstellen von Excel-Dateien (.xlsx) mit der openpyxl-Bibliothek.
+Python-Projekt zum automatischen Erstellen von Dienstplänen mit Vergütungsberechnung nach NRW-Regeln (Variante 2 "streng").
 
-## Voraussetzungen
+## Features
 
-- Python 3.8 oder höher
-- pip (Python Package Installer)
+- ✅ Automatische Erkennung von Wochenenden (Fr–So), Feiertagen und Vortagen
+- ✅ Vergütungslogik: WT 250€, WE 450€ (nur ab Schwelle ≥ 2,0 WE-Einheiten)
+- ✅ Abzug 1,0 WE-Einheit (Freitag-Priorität) nach Erreichen der Schwelle
+- ✅ Vorbefüllte Monatsvorlagen mit allen Datumswerten
+- ✅ Excel-kompatibel (ohne Office 365 Funktionen)
 
 ## Installation
 
-1. Erstellen Sie eine virtuelle Umgebung (empfohlen):
+1. Virtuelle Umgebung erstellen:
 
 ```powershell
-python -m venv venv
+python -m venv .venv
 ```
 
-1. Aktivieren Sie die virtuelle Umgebung:
+2. Umgebung aktivieren:
 
 ```powershell
-.\venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 ```
 
-1. Installieren Sie die erforderlichen Pakete:
+3. Abhängigkeiten installieren:
 
 ```powershell
 pip install -r requirements.txt
@@ -29,37 +32,49 @@ pip install -r requirements.txt
 
 ## Verwendung
 
-Führen Sie das Hauptskript aus:
+### Monat erstellen
 
 ```powershell
-python src/main.py
+python src/fill_plan_dates.py 2025 11  # November 2025
+python src/fill_plan_dates.py 2025 12  # Dezember 2025
 ```
 
-Dies erstellt eine Excel-Datei `output/example.xlsx` mit Beispieldaten.
+Die Datei landet in `output/Dienstplan_YYYY_MM_NRW.xlsx`.
 
-### NRW-Dienstplan-Vorlage erstellen
+### Daten eintragen
 
-Das Skript `src/build_template.py` erzeugt eine leere Excel-Vorlage mit allen Regeln für NRW (Wochenenddefinition Fr–So, Feiertage + Vortag, automatische Abzüge).
+1. Öffne die generierte Datei
+2. Gehe zum Blatt "Plan"
+3. Trage in Spalte B die Mitarbeiter-Namen ein
+4. Trage in Spalte C den Anteil ein (1 = voll, 0.5 = halb)
+5. Gehe zum Blatt "Auswertung" und trage in Spalte A alle Mitarbeiter ein
 
-```powershell
-python src/build_template.py
-```
-
-Die Vorlage wird unter `templates/Dienstplan_Template_NRW.xlsx` abgelegt. Dort tragen Sie lediglich Namen/Anteile ein; die Abrechnung erfolgt über die vorbereiteten Formeln.
+**Fertig!** Alle Berechnungen erfolgen automatisch.
 
 ## Projektstruktur
 
 ```text
 .
 ├── src/
-│   ├── main.py             # Beispielskript für XLSX-Ausgabe
-│   └── build_template.py   # Generator für die NRW-Dienstplan-Vorlage
-├── output/              # Ausgabeverzeichnis für erstellte Excel-Dateien
-├── templates/           # Enthält die generierte Dienstplan-Vorlage
-├── requirements.txt     # Python-Abhängigkeiten
-└── README.md            # Diese Datei
+│   ├── build_template.py   # Erstellt die Basis-Vorlage
+│   ├── fill_plan_dates.py  # Füllt Monate mit Datumszeilen
+│   └── read_excel.py       # Liest xlsx-Dateien aus
+├── output/                 # Generierte Monatspläne
+├── templates/              # Basis-Vorlage
+├── requirements.txt        # Python-Abhängigkeiten (openpyxl)
+├── SPECIFICATION.md        # Vollständige Regeln & Formeln
+└── README.md              # Diese Datei
 ```
 
-## Anpassung
+## Regeln (Variante 2 - streng)
 
-Bearbeiten Sie `src/main.py`, um Ihre eigenen Excel-Dateien zu erstellen.
+- **WE-Tag**: Fr/Sa/So + Feiertag + Vortag Feiertag
+- **WT-Tag**: Alle anderen Tage (250 € pro Einheit)
+- **WE-Vergütung**: Nur wenn Monatssumme ≥ 2,0 WE-Einheiten → 450 €/Einheit, dann Abzug 1,0 (zuerst von Freitag)
+- **Unter Schwelle**: WE-Dienste = 0 € (nicht als WT vergütet)
+
+Details siehe `SPECIFICATION.md`.
+
+## Lizenz
+
+MIT
