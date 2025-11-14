@@ -1,8 +1,16 @@
 # Dienstplan Generator (NRW - Variante 2)
 
-Python-Projekt zum automatischen Erstellen von Dienstplänen mit Vergütungsberechnung nach NRW-Regeln (Variante 2 "streng").
+Projekt zum automatischen Erstellen von Dienstplänen mit Vergütungsberechnung nach NRW-Regeln (Variante 2 "streng").
 
-## Features
+## Verfügbare Versionen
+
+### Python/Excel Version (Desktop)
+Python-basierter Generator für Excel-Dienstpläne.
+
+### Android App (Mobile) 🆕
+Native Android-App für mobiles Dienstplan-Management. Siehe [android-app/README.md](android-app/README.md) für Details.
+
+## Features (Python/Excel Version)
 
 - ✅ Automatische Erkennung von Wochenenden (Fr–So), Feiertagen und Vortagen
 - ✅ Vergütungslogik: WT 250€, WE 450€ (nur ab Schwelle ≥ 2,0 WE-Einheiten)
@@ -55,10 +63,14 @@ Die Datei landet in `output/Dienstplan_YYYY_MM_NRW.xlsx`.
 
 ```text
 .
-├── src/
+├── src/                    # Python source code
 │   ├── build_template.py   # Erstellt die Basis-Vorlage
 │   ├── fill_plan_dates.py  # Füllt Monate mit Datumszeilen
 │   └── read_excel.py       # Liest xlsx-Dateien aus
+├── android-app/            # Android mobile app
+│   ├── app/                # Android app source code
+│   ├── build.gradle.kts    # Build configuration
+│   └── README.md           # Android app documentation
 ├── output/                 # Generierte Monatspläne
 ├── templates/              # Basis-Vorlage
 ├── requirements.txt        # Python-Abhängigkeiten (openpyxl)

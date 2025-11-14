@@ -1,5 +1,54 @@
 # Changelog
 
+## 2025-11-14 - Android App Implementation
+
+### Feature
+Added native Android mobile app for duty roster management with the same NRW Variante 2 (streng) payroll calculation logic as the Python/Excel version.
+
+### Details
+
+**New Android App:**
+- Location: `android-app/` directory
+- Language: Kotlin
+- Min SDK: Android 7.0 (API 24)
+- Target SDK: Android 14 (API 34)
+
+**Features:**
+- Month selection interface (2025-2030)
+- Duty entry with employee name and share (Anteil)
+- Automatic payroll calculation
+- Results display with detailed breakdown per employee
+- In-memory data storage
+
+**Business Logic:**
+- Same NRW holidays (2025-2026)
+- Same WE-Tag detection (Friday, Saturday, Sunday, holidays, day before holiday)
+- Same WT-Tag classification
+- Same compensation rates (WT: 250€, WE: 450€)
+- Same threshold logic (≥ 2.0 WE units)
+- Same deduction rules (1.0 unit, Friday priority)
+- Same Variante 2 behavior (no WE compensation below threshold)
+
+**Testing:**
+- Comprehensive unit tests for PayrollCalculator
+- All test cases passed (under threshold, at threshold, over threshold, Friday priority, multiple employees)
+
+**Documentation:**
+- Android-specific README with setup instructions
+- Main README updated to mention Android app
+- .gitignore updated for Android build artifacts
+
+### Usage
+
+See [android-app/README.md](android-app/README.md) for detailed Android setup and usage instructions.
+
+### Known Limitations
+- Data is not persisted (in-memory only)
+- No data export/import functionality
+- German language only
+
+---
+
 ## 2025-11-14 - Fix Excel Formula Syntax Error
 
 ### Issue
