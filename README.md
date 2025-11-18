@@ -4,10 +4,22 @@ Projekt zum automatischen Erstellen von Dienstplänen mit Vergütungsberechnung 
 
 ## Verfügbare Versionen
 
+### Web-App (Browser) 🆕
+**Empfohlen für die meisten Benutzer!**
+
+Moderne Web-Anwendung zur Bonusberechnung für Wochenend- und Feiertagsdienste.
+- ✅ Läuft direkt im Browser (keine Installation)
+- ✅ Mitarbeiterverwaltung
+- ✅ Monatliche Dienstplanung
+- ✅ Automatische Bonusberechnung
+- ✅ Export/Import-Funktion
+
+Siehe [webapp/README.md](webapp/README.md) für Details.
+
 ### Python/Excel Version (Desktop)
 Python-basierter Generator für Excel-Dienstpläne.
 
-### Android App (Mobile) 🆕
+### Android App (Mobile)
 Native Android-App für mobiles Dienstplan-Management. Siehe [android-app/README.md](android-app/README.md) für Details.
 
 ## Features (Python/Excel Version)
@@ -63,6 +75,14 @@ Die Datei landet in `output/Dienstplan_YYYY_MM_NRW.xlsx`.
 
 ```text
 .
+├── webapp/                 # Web-App (Browser) 🆕
+│   ├── index.html          # Haupt-HTML-Datei
+│   ├── styles.css          # Styling
+│   ├── app.js              # App-Logik & UI
+│   ├── calculator.js       # Bonusberechnung
+│   ├── holidays.js         # NRW-Feiertagsdaten
+│   ├── storage.js          # LocalStorage-Verwaltung
+│   └── README.md           # Web-App Dokumentation
 ├── src/                    # Python source code
 │   ├── build_template.py   # Erstellt die Basis-Vorlage
 │   ├── fill_plan_dates.py  # Füllt Monate mit Datumszeilen

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dienstplan Bonusrechner - NRW</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dienstplan Bonusrechner</h1>
+            <p class="subtitle">Bonuszahlungen für Wochenend- und Feiertagsdienste (NRW)</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="duties">Dienste eintragen</button>
+            <button class="tab-btn" data-tab="calculation">Berechnung</button>
+            <button class="tab-btn" data-tab="employees">Mitarbeiter verwalten</button>
+            <button class="tab-btn" data-tab="settings">Einstellungen</button>
+        </div>
+
+        <!-- Tab: Dienste eintragen -->
+        <div id="tab-duties" class="tab-content active">
+            <div class="card">
+                <h2>Dienste eintragen</h2>
+
+                <!-- Month Selection -->
+                <div class="form-group">
+                    <label for="month-select">Monat auswählen:</label>
+                    <div class="month-selector">
+                        <select id="month-select">
+                            <option value="1">Januar</option>
+                            <option value="2">Februar</option>
+                            <option value="3">März</option>
+                            <option value="4">April</option>
+                            <option value="5">Mai</option>
+                            <option value="6">Juni</option>
+                            <option value="7">Juli</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">Oktober</option>
+                            <option value="11">November</option>
+                            <option value="12">Dezember</option>
+                        </select>
+                        <select id="year-select">
+                            <!-- Will be populated by JavaScript -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Employee Selection -->
+                <div class="form-group">
+                    <label for="employee-select-duty">Mitarbeiter:</label>
+                    <select id="employee-select-duty">
+                        <option value="">-- Mitarbeiter auswählen --</option>
+                    </select>
+                </div>
+
+                <!-- Add Duty Form -->
+                <div class="form-group">
+                    <label for="duty-date">Datum:</label>
+                    <input type="date" id="duty-date">
+                </div>
+
+                <div class="form-group">
+                    <label for="duty-share">Dienstanteil:</label>
+                    <select id="duty-share">
+                        <option value="1">Ganzer Dienst (1.0)</option>
+                        <option value="0.5">Halber Dienst (0.5)</option>
+                    </select>
+                </div>
+
+                <button id="add-duty-btn" class="btn btn-primary">Dienst hinzufügen</button>
+
+                <!-- Duties List -->
+                <div class="duties-list">
+                    <h3>Eingetragene Dienste</h3>
+                    <div id="duties-display">
+                        <p class="text-muted">Wählen Sie einen Mitarbeiter aus, um Dienste anzuzeigen.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Berechnung -->
+        <div id="tab-calculation" class="tab-content">
+            <div class="card">
+                <h2>Bonusberechnung</h2>
+
+                <!-- Month Selection for Calculation -->
+                <div class="form-group">
+                    <label for="calc-month-select">Monat auswählen:</label>
+                    <div class="month-selector">
+                        <select id="calc-month-select">
+                            <option value="1">Januar</option>
+                            <option value="2">Februar</option>
+                            <option value="3">März</option>
+                            <option value="4">April</option>
+                            <option value="5">Mai</option>
+                            <option value="6">Juni</option>
+                            <option value="7">Juli</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">Oktober</option>
+                            <option value="11">November</option>
+                            <option value="12">Dezember</option>
+                        </select>
+                        <select id="calc-year-select">
+                            <!-- Will be populated by JavaScript -->
+                        </select>
+                    </div>
+                </div>
+
+                <button id="calculate-btn" class="btn btn-primary">Berechnung durchführen</button>
+
+                <!-- Results Display -->
+                <div id="calculation-results">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Mitarbeiter verwalten -->
+        <div id="tab-employees" class="tab-content">
+            <div class="card">
+                <h2>Mitarbeiter verwalten</h2>
+
+                <!-- Add Employee -->
+                <div class="form-group">
+                    <label for="new-employee-name">Neuer Mitarbeiter:</label>
+                    <div class="input-group">
+                        <input type="text" id="new-employee-name" placeholder="Name eingeben...">
+                        <button id="add-employee-btn" class="btn btn-primary">Hinzufügen</button>
+                    </div>
+                </div>
+
+                <!-- Employee List -->
+                <div class="employee-list">
+                    <h3>Mitarbeiter</h3>
+                    <div id="employee-list-display">
+                        <p class="text-muted">Keine Mitarbeiter vorhanden.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Einstellungen -->
+        <div id="tab-settings" class="tab-content">
+            <div class="card">
+                <h2>Einstellungen & Daten</h2>
+
+                <div class="settings-section">
+                    <h3>Berechnungsregeln</h3>
+                    <div class="info-box">
+                        <h4>Qualifizierende Tage (WE/Feiertag):</h4>
+                        <ul>
+                            <li>Freitag, Samstag, Sonntag</li>
+                            <li>Feiertage in NRW</li>
+                            <li>Tag vor einem Feiertag</li>
+                        </ul>
+
+                        <h4>Bonusberechnung:</h4>
+                        <ul>
+                            <li>Mindestens <strong>2.0 qualifizierende Tage</strong> erforderlich</li>
+                            <li>Bei Erreichen der Schwelle: <strong>1.0 qualifizierender Tag</strong> wird abgezogen</li>
+                            <li>Normale Tage: <strong>250€</strong> pro Tag</li>
+                            <li>Qualifizierende Tage: <strong>450€</strong> pro Tag</li>
+                            <li>Halbe Dienste werden mit der Hälfte berechnet</li>
+                        </ul>
+
+                        <h4>Wichtig:</h4>
+                        <p>Wenn weniger als 2.0 qualifizierende Tage erreicht werden, erfolgt <strong>keine Bonuszahlung</strong>.</p>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Datenexport / Import</h3>
+                    <button id="export-btn" class="btn btn-secondary">Daten exportieren (JSON)</button>
+                    <div class="form-group">
+                        <label for="import-file">Daten importieren:</label>
+                        <input type="file" id="import-file" accept=".json">
+                        <button id="import-btn" class="btn btn-secondary">Importieren</button>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Alle Daten löschen</h3>
+                    <p class="text-warning">Achtung: Diese Aktion kann nicht rückgängig gemacht werden!</p>
+                    <button id="clear-all-btn" class="btn btn-danger">Alle Daten löschen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Scripts -->
+    <script src="holidays.js"></script>
+    <script src="calculator.js"></script>
+    <script src="storage.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
