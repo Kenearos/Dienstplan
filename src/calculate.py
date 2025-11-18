@@ -117,18 +117,21 @@ def calculate_verguetung(plan_data, holidays):
             # Abzug von 1.0 WE-Einheit (Freitag zuerst)
             abzug_freitag = min(ABZUG, we_fri)
             abzug_andere = max(0, ABZUG - abzug_freitag)
-            
+
             # Bezahlte WE-Einheiten
             we_bezahlt = (we_fri - abzug_freitag) + (we_other - abzug_andere)
+
+            # Auszahlungen - nur wenn Schwelle erreicht
+            auszahlung_wt = wt * SATZ_WT
+            auszahlung_we = we_bezahlt * SATZ_WE
         else:
-            # Schwelle nicht erreicht - keine WE-Vergütung
+            # Schwelle nicht erreicht - kein Bonus (weder WT noch WE)
             abzug_freitag = 0
             abzug_andere = 0
             we_bezahlt = 0
-        
-        # Auszahlungen
-        auszahlung_wt = wt * SATZ_WT
-        auszahlung_we = we_bezahlt * SATZ_WE
+            auszahlung_wt = 0
+            auszahlung_we = 0
+
         auszahlung_gesamt = auszahlung_wt + auszahlung_we
         
         results.append({

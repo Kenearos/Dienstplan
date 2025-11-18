@@ -66,17 +66,23 @@ class BonusCalculator {
             return this.getEmptyResult();
         }
 
-        // Separate qualifying and non-qualifying days
-        let qualifyingDays = 0;
+        // Separate qualifying days (Friday separate from others) and non-qualifying days
+        let qualifyingDaysFriday = 0;
+        let qualifyingDaysOther = 0;
         let normalDays = 0;
         const dutyDetails = [];
 
         duties.forEach(duty => {
             const isQualifying = this.isQualifyingDay(duty.date);
             const dayType = this.getDayTypeLabel(duty.date);
+            const isFriday = duty.date.getDay() === 5;
 
             if (isQualifying) {
-                qualifyingDays += duty.share;
+                if (isFriday) {
+                    qualifyingDaysFriday += duty.share;
+                } else {
+                    qualifyingDaysOther += duty.share;
+                }
             } else {
                 normalDays += duty.share;
             }
@@ -89,31 +95,51 @@ class BonusCalculator {
             });
         });
 
+        const qualifyingDaysTotal = qualifyingDaysFriday + qualifyingDaysOther;
+
         // Check if threshold is reached
-        const thresholdReached = qualifyingDays >= this.MIN_QUALIFYING_DAYS;
+        const thresholdReached = qualifyingDaysTotal >= this.MIN_QUALIFYING_DAYS;
 
         let bonus = 0;
         let normalDaysPaid = 0;
         let qualifyingDaysPaid = 0;
-        let qualifyingDaysDeducted = 0;
+        let deductionFromFriday = 0;
+        let deductionFromOther = 0;
+        let totalDeduction = 0;
 
         if (thresholdReached) {
-            // Deduct 1.0 qualifying day
-            qualifyingDaysDeducted = 1.0;
-            qualifyingDaysPaid = Math.max(0, qualifyingDays - qualifyingDaysDeducted);
+            // Deduct 1.0 qualifying day with Friday priority
+            totalDeduction = 1.0;
+
+            // First deduct from Friday
+            deductionFromFriday = Math.min(totalDeduction, qualifyingDaysFriday);
+
+            // Remaining deduction from other qualifying days
+            deductionFromOther = Math.max(0, totalDeduction - deductionFromFriday);
+
+            // Calculate paid days
+            const qualifyingDaysFridayPaid = Math.max(0, qualifyingDaysFriday - deductionFromFriday);
+            const qualifyingDaysOtherPaid = Math.max(0, qualifyingDaysOther - deductionFromOther);
+
+            qualifyingDaysPaid = qualifyingDaysFridayPaid + qualifyingDaysOtherPaid;
             normalDaysPaid = normalDays;
 
             // Calculate bonus
             bonus = (normalDaysPaid * this.RATE_NORMAL) + (qualifyingDaysPaid * this.RATE_WEEKEND);
         }
+        // If threshold not reached: no bonus paid (neither WT nor WE)
 
         return {
             totalDuties: duties.length,
-            totalDaysWorked: qualifyingDays + normalDays,
+            totalDaysWorked: qualifyingDaysTotal + normalDays,
             normalDays: normalDays,
-            qualifyingDays: qualifyingDays,
+            qualifyingDaysFriday: qualifyingDaysFriday,
+            qualifyingDaysOther: qualifyingDaysOther,
+            qualifyingDays: qualifyingDaysTotal,
             thresholdReached: thresholdReached,
-            qualifyingDaysDeducted: qualifyingDaysDeducted,
+            deductionFromFriday: deductionFromFriday,
+            deductionFromOther: deductionFromOther,
+            qualifyingDaysDeducted: totalDeduction,
             normalDaysPaid: normalDaysPaid,
             qualifyingDaysPaid: qualifyingDaysPaid,
             bonusNormalDays: normalDaysPaid * this.RATE_NORMAL,
@@ -147,8 +173,12 @@ class BonusCalculator {
             totalDuties: 0,
             totalDaysWorked: 0,
             normalDays: 0,
+            qualifyingDaysFriday: 0,
+            qualifyingDaysOther: 0,
             qualifyingDays: 0,
             thresholdReached: false,
+            deductionFromFriday: 0,
+            deductionFromOther: 0,
             qualifyingDaysDeducted: 0,
             normalDaysPaid: 0,
             qualifyingDaysPaid: 0,
