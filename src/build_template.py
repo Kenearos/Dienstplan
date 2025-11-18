@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import date
 
 from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
+from openpyxl.styles import Alignment, Font, PatternFill, Border, Side, numbers
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from openpyxl.utils import get_column_letter
@@ -103,7 +103,10 @@ def _populate_holidays(ws):
     
     all_holidays = NRW_HOLIDAYS_2025 + NRW_HOLIDAYS_2026
     for iso_date, name, bl in all_holidays:
-        ws.append([iso_date, name, bl])
+        # Convert ISO string to date object
+        year, month, day = iso_date.split('-')
+        date_obj = date(int(year), int(month), int(day))
+        ws.append([date_obj, name, bl])
     
     # Create table
     tab = Table(displayName="tblFeiertage", ref=f"A1:C{len(all_holidays)+1}")
@@ -116,6 +119,10 @@ def _populate_holidays(ws):
     ws.column_dimensions["B"].width = 32
     ws.column_dimensions["C"].width = 8
     _style_header(ws)
+    
+    # Format column A as date
+    for row in range(2, len(all_holidays) + 2):
+        ws[f"A{row}"].number_format = 'DD.MM.YYYY'
 
 
 def _plan_formulas(row: int) -> dict:
@@ -124,18 +131,18 @@ def _plan_formulas(row: int) -> dict:
     anteil_cell = f"C{row}"
     
     # Holiday range filtered by BL (Non-365 fallback with SUMPRODUCT)
-    holiday_check = f'SUMMENPRODUKT((tblFeiertage[Datum]={date_cell})*(tblFeiertage[BL]=Regeln!$B$6))>0'
-    vortag_check = f'SUMMENPRODUKT((tblFeiertage[Datum]={date_cell}+1)*(tblFeiertage[BL]=Regeln!$B$6))>0'
+    holiday_check = f'SUMPRODUCT((tblFeiertage[Datum]={date_cell})*(tblFeiertage[BL]=Regeln!$B$6))>0'
+    vortag_check = f'SUMPRODUCT((tblFeiertage[Datum]={date_cell}+1)*(tblFeiertage[BL]=Regeln!$B$6))>0'
     
     return {
-        "D": f"=WENNFEHLER({holiday_check};FALSCH)",  # Ist_FEIERTAG
-        "E": f"=WENNFEHLER({vortag_check};FALSCH)",   # Ist_VORTAG
-        "F": f"=WENNFEHLER(WOCHENTAG({date_cell};2)=5;FALSCH)",  # Ist_Freitag
-        "G": f"=ODER($F{row};WOCHENTAG({date_cell};2)=6;WOCHENTAG({date_cell};2)=7;$D{row};$E{row})",  # Ist_WE_Tag
-        "H": f"=NICHT($G{row})",  # Ist_WT_Tag
-        "I": f"=WENN($H{row};{anteil_cell};0)",  # WT_Einheit
-        "J": f"=WENN(UND($G{row};$F{row});{anteil_cell};0)",  # WE_Freitag_Einheit
-        "K": f"=WENN(UND($G{row};NICHT($F{row}));{anteil_cell};0)",  # WE_Andere_Einheit
+        "D": f"=IFERROR({holiday_check},FALSE)",  # Ist_FEIERTAG
+        "E": f"=IFERROR({vortag_check},FALSE)",   # Ist_VORTAG
+        "F": f"=IFERROR(WEEKDAY({date_cell},2)=5,FALSE)",  # Ist_Freitag
+        "G": f"=OR($F{row},WEEKDAY({date_cell},2)=6,WEEKDAY({date_cell},2)=7,$D{row},$E{row})",  # Ist_WE_Tag
+        "H": f"=NOT($G{row})",  # Ist_WT_Tag
+        "I": f"=IF($H{row},{anteil_cell},0)",  # WT_Einheit
+        "J": f"=IF(AND($G{row},$F{row}),{anteil_cell},0)",  # WE_Freitag_Einheit
+        "K": f"=IF(AND($G{row},NOT($F{row})),{anteil_cell},0)",  # WE_Andere_Einheit
     }
 
 
@@ -170,6 +177,10 @@ def _populate_plan(ws):
     ws.column_dimensions["C"].width = 10
     for col in "DEFGHIJK":
         ws.column_dimensions[col].width = 13
+    
+    # Format column A as date
+    for row in range(2, MAX_PLAN_ROWS + 2):
+        ws[f"A{row}"].number_format = 'DD.MM.YYYY'
 
 
 def _populate_auswertung(ws):
@@ -185,18 +196,18 @@ def _populate_auswertung(ws):
     # Row 2 onwards: formulas reference column A
     
     monat_start = "Regeln!$B$7"
-    monat_end = f"MONATSENDE({monat_start};0)"
+    monat_end = f"EOMONTH({monat_start},0)"
     
     # Create formulas for 50 rows
     for row in range(2, 52):
         name_ref = f"$A{row}"
         
         # Skip if no name
-        guard = f'WENN({name_ref}="";""'
+        guard = f'IF({name_ref}="",""'
         
-        # WT_Einheiten - using SUMMENPRODUKT for compatibility
+        # WT_Einheiten - using SUMPRODUCT for compatibility
         wt_formula = (
-            f'={guard};SUMMENPRODUKT((tblPlan[Mitarbeiter]={name_ref})*'
+            f'={guard},SUMPRODUCT((tblPlan[Mitarbeiter]={name_ref})*'
             f'(tblPlan[Datum]>={monat_start})*(tblPlan[Datum]<={monat_end})*'
             f'(tblPlan[WT_Einheit])))'
         )
@@ -204,7 +215,7 @@ def _populate_auswertung(ws):
         
         # WE_Freitag
         we_fri_formula = (
-            f'={guard};SUMMENPRODUKT((tblPlan[Mitarbeiter]={name_ref})*'
+            f'={guard},SUMPRODUCT((tblPlan[Mitarbeiter]={name_ref})*'
             f'(tblPlan[Datum]>={monat_start})*(tblPlan[Datum]<={monat_end})*'
             f'(tblPlan[WE_Freitag_Einheit])))'
         )
@@ -212,38 +223,38 @@ def _populate_auswertung(ws):
         
         # WE_Andere
         we_other_formula = (
-            f'={guard};SUMMENPRODUKT((tblPlan[Mitarbeiter]={name_ref})*'
+            f'={guard},SUMPRODUCT((tblPlan[Mitarbeiter]={name_ref})*'
             f'(tblPlan[Datum]>={monat_start})*(tblPlan[Datum]<={monat_end})*'
             f'(tblPlan[WE_Andere_Einheit])))'
         )
         ws[f"D{row}"] = we_other_formula
         
         # WE_Gesamt
-        ws[f"E{row}"] = f'={guard};C{row}+D{row})'
+        ws[f"E{row}"] = f'={guard},C{row}+D{row})'
         
         # Schwelle_erreicht
-        ws[f"F{row}"] = f'={guard};WENN(E{row}>=Regeln!$B$4-0,0001;"JA";"NEIN"))'
+        ws[f"F{row}"] = f'={guard},IF(E{row}>=Regeln!$B$4-0.0001,"JA","NEIN"))'
         
         # Abzug_gesamt
-        ws[f"G{row}"] = f'={guard};WENN(E{row}>=Regeln!$B$4-0,0001;Regeln!$B$5;0))'
+        ws[f"G{row}"] = f'={guard},IF(E{row}>=Regeln!$B$4-0.0001,Regeln!$B$5,0))'
         
         # Abzug_Freitag
-        ws[f"H{row}"] = f'={guard};MIN(G{row};C{row}))'
+        ws[f"H{row}"] = f'={guard},MIN(G{row},C{row}))'
         
         # Abzug_Andere
-        ws[f"I{row}"] = f'={guard};MAX(0;G{row}-H{row}))'
+        ws[f"I{row}"] = f'={guard},MAX(0,G{row}-H{row}))'
         
         # WE_bezahlt (Variante 2: only if threshold reached)
-        ws[f"J{row}"] = f'={guard};WENN(E{row}<Regeln!$B$4-0,0001;0;(C{row}-H{row})+(D{row}-I{row})))'
+        ws[f"J{row}"] = f'={guard},IF(E{row}<Regeln!$B$4-0.0001,0,(C{row}-H{row})+(D{row}-I{row})))'
         
         # Auszahlung_WT
-        ws[f"K{row}"] = f'={guard};B{row}*Regeln!$B$2)'
+        ws[f"K{row}"] = f'={guard},B{row}*Regeln!$B$2)'
         
         # Auszahlung_WE
-        ws[f"L{row}"] = f'={guard};J{row}*Regeln!$B$3)'
+        ws[f"L{row}"] = f'={guard},J{row}*Regeln!$B$3)'
         
         # Auszahlung_Gesamt
-        ws[f"M{row}"] = f'={guard};K{row}+L{row})'
+        ws[f"M{row}"] = f'={guard},K{row}+L{row})'
 
     widths = [22, 14, 14, 14, 14, 16, 14, 14, 14, 14, 14, 14, 16]
     for idx, width in enumerate(widths, start=1):
@@ -260,8 +271,8 @@ def _populate_checks(ws):
     # Formula checks sum of Anteil for each date
     for row in range(2, 52):
         date_ref = f"A{row}"
-        ws[f"B{row}"] = f'=WENN({date_ref}="";"";SUMMENPRODUKT((tblPlan[Datum]={date_ref})*(tblPlan[Anteil])))'
-        ws[f"C{row}"] = f'=WENN({date_ref}="";"";WENN(ABS(B{row}-1)<=0,0001;"OK";"FEHLER"))'
+        ws[f"B{row}"] = f'=IF({date_ref}="","",SUMPRODUCT((tblPlan[Datum]={date_ref})*(tblPlan[Anteil])))'
+        ws[f"C{row}"] = f'=IF({date_ref}="","",IF(ABS(B{row}-1)<=0.0001,"OK","FEHLER"))'
     
     ws.column_dimensions["A"].width = 14
     ws.column_dimensions["B"].width = 16

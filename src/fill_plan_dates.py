@@ -6,6 +6,7 @@ Nutzer muss nur noch Namen + Anteile eintragen.
 from pathlib import Path
 from datetime import date, timedelta
 from openpyxl import load_workbook
+from openpyxl.styles import numbers
 import sys
 
 
@@ -43,7 +44,9 @@ def fill_plan_with_dates(template_path, output_path, year, month):
     row = 2  # Zeile 2 = erste Datenzeile nach Header
     
     while current_date <= end_date:
-        plan_ws[f"A{row}"] = current_date
+        cell = plan_ws[f"A{row}"]
+        cell.value = current_date
+        cell.number_format = 'DD.MM.YYYY'  # Deutsches Datumsformat
         # Spalten B (Mitarbeiter) und C (Anteil) bleiben leer zum Ausfüllen
         current_date += timedelta(days=1)
         row += 1
