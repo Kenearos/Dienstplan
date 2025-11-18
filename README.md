@@ -95,7 +95,8 @@ Die Datei landet in `output/Dienstplan_YYYY_MM_NRW.xlsx`.
 ├── templates/              # Basis-Vorlage
 ├── requirements.txt        # Python-Abhängigkeiten (openpyxl)
 ├── SPECIFICATION.md        # Vollständige Regeln & Formeln
-└── README.md              # Diese Datei
+├── claude.md               # Umfassende Projekt-Dokumentation
+└── README.md               # Diese Datei
 ```
 
 ## Regeln (Variante 2 - streng)
