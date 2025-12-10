@@ -627,10 +627,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="employeeName">Mitarbeiter hinzufugen</label>
+                    <label for="employeeName">Mitarbeiter hinzufügen</label>
                     <div style="display: flex; gap: 10px;">
                         <input type="text" id="employeeName" placeholder="Name eingeben..." style="flex: 1;">
-                        <button class="btn btn-primary" onclick="addEmployee()">Hinzufugen</button>
+                        <button class="btn btn-primary" onclick="addEmployee()">Hinzufügen</button>
                     </div>
                 </div>
 
@@ -638,7 +638,7 @@
 
                 <div class="info-box" style="margin-top: 25px;">
                     <h4>Hinweis</h4>
-                    <p>Sie konnen Mitarbeiter jederzeit hinzufugen oder entfernen. Die Daten werden lokal im Browser gespeichert.</p>
+                    <p>Sie können Mitarbeiter jederzeit hinzufügen oder entfernen. Die Daten werden lokal im Browser gespeichert.</p>
                 </div>
 
                 <div class="navigation">
@@ -650,10 +650,10 @@
             <!-- Step 2: Dienste -->
             <div class="step-content" id="step2">
                 <h2>Schritt 2: Dienste eintragen</h2>
-                <p style="color: #718096; margin: 10px 0 25px;">Tragen Sie die Dienste fur <span id="monthYearDisplay"></span> ein.</p>
+                <p style="color: #718096; margin: 10px 0 25px;">Tragen Sie die Dienste für <span id="monthYearDisplay"></span> ein.</p>
 
                 <div class="duty-entry">
-                    <h3>Neuen Dienst hinzufugen</h3>
+                    <h3>Neuen Dienst hinzufügen</h3>
                     <div class="duty-row">
                         <div class="form-group" style="margin: 0;">
                             <label for="dutyEmployee">Mitarbeiter</label>
@@ -676,7 +676,7 @@
                     </div>
                 </div>
 
-                <h3>Kalenderubersicht</h3>
+                <h3>Kalenderübersicht</h3>
                 <div id="calendarContainer"></div>
                 <div class="legend">
                     <div class="legend-item">
@@ -695,7 +695,7 @@
                 </div>
 
                 <div class="navigation">
-                    <button class="btn btn-secondary" onclick="goToStep(1)">Zuruck</button>
+                    <button class="btn btn-secondary" onclick="goToStep(1)">Zurück</button>
                     <button class="btn btn-primary" onclick="calculateAndShowResults()">Berechnen</button>
                 </div>
             </div>
@@ -708,7 +708,7 @@
                 <div id="resultsContainer"></div>
 
                 <div class="navigation">
-                    <button class="btn btn-secondary" onclick="goToStep(2)">Zuruck</button>
+                    <button class="btn btn-secondary" onclick="goToStep(2)">Zurück</button>
                     <button class="btn btn-primary" onclick="window.print()">Drucken</button>
                 </div>
             </div>
@@ -809,7 +809,7 @@
         const DEDUCTION = 1.0;
 
         const MONTHS = [
-            'Januar', 'Februar', 'Marz', 'April', 'Mai', 'Juni',
+            'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
             'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
         ];
 
@@ -1069,7 +1069,7 @@
             const container = document.getElementById('employeeList');
 
             if (employees.length === 0) {
-                container.innerHTML = '<div class="empty-state"><p>Noch keine Mitarbeiter hinzugefugt</p></div>';
+                container.innerHTML = '<div class="empty-state"><p>Noch keine Mitarbeiter hinzugefügt</p></div>';
                 return;
             }
 
@@ -1139,13 +1139,13 @@
             const share = parseFloat(document.getElementById('dutyShare').value);
 
             if (!employee || !dateStr) {
-                alert('Bitte fullen Sie alle Felder aus.');
+                alert('Bitte füllen Sie alle Felder aus.');
                 return;
             }
 
             const date = new Date(dateStr);
             if (date.getMonth() !== selectedMonth || date.getFullYear() !== selectedYear) {
-                alert('Das Datum muss im ausgewahlten Monat liegen.');
+                alert('Das Datum muss im ausgewählten Monat liegen.');
                 return;
             }
 
@@ -1195,7 +1195,7 @@
                         </div>
                         <div>Anteil: ${formatNumber(duty.share)}</div>
                         <div>
-                            <button class="btn btn-danger" onclick="removeDuty(${realIndex})">Loschen</button>
+                            <button class="btn btn-danger" onclick="removeDuty(${realIndex})">Löschen</button>
                         </div>
                     </div>
                 `;
@@ -1209,7 +1209,7 @@
             });
 
             if (monthDuties.length === 0) {
-                alert('Keine Dienste fur diesen Monat eingetragen.');
+                alert('Keine Dienste für diesen Monat eingetragen.');
                 return;
             }
 
@@ -1313,7 +1313,7 @@
                 localStorage.setItem('dienstplan_portable_month', selectedMonth);
                 localStorage.setItem('dienstplan_portable_year', selectedYear);
             } catch (e) {
-                console.log('Speichern nicht moglich:', e);
+                console.log('Speichern nicht möglich:', e);
             }
         }
 
@@ -1329,7 +1329,7 @@
                 if (savedMonth !== null) selectedMonth = parseInt(savedMonth);
                 if (savedYear !== null) selectedYear = parseInt(savedYear);
             } catch (e) {
-                console.log('Laden nicht moglich:', e);
+                console.log('Laden nicht möglich:', e);
             }
         }
 
