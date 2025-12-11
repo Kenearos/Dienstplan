@@ -50,6 +50,7 @@ class DienstplanApp {
         document.getElementById('calculate-btn').addEventListener('click', () => this.calculateBonuses());
 
         // Settings
+        document.getElementById('export-csv-btn').addEventListener('click', () => this.exportCSV());
         document.getElementById('export-btn').addEventListener('click', () => this.exportData());
         document.getElementById('import-btn').addEventListener('click', () => this.importData());
         document.getElementById('clear-all-btn').addEventListener('click', () => this.clearAllData());
@@ -432,6 +433,112 @@ class DienstplanApp {
         URL.revokeObjectURL(url);
 
         this.showToast('Daten wurden exportiert.', 'success');
+    }
+
+    /**
+     * Export data as CSV (Excel-compatible) - Beginner-friendly format
+     * Exports all duties and monthly summary for the selected month
+     */
+    exportCSV() {
+        const monthNames = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+                          'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+        const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+        
+        const month = parseInt(document.getElementById('calc-month-select').value);
+        const year = parseInt(document.getElementById('calc-year-select').value);
+        
+        // Helper function to escape CSV values (handles semicolons, quotes, newlines)
+        const escapeCSV = (value) => {
+            const str = String(value);
+            if (str.includes(';') || str.includes('"') || str.includes('\n')) {
+                return '"' + str.replace(/"/g, '""') + '"';
+            }
+            return str;
+        };
+        
+        // Build CSV content with BOM for Excel UTF-8 support
+        let csv = '\uFEFF'; // UTF-8 BOM for Excel
+        
+        // === Sheet 1: Dienste (All Duties for the month) ===
+        csv += `DIENSTE ${monthNames[month - 1]} ${year}\n`;
+        csv += 'Datum;Wochentag;Mitarbeiter;Anteil;Tagestyp\n';
+        
+        const employees = this.storage.getEmployees();
+        const allDuties = [];
+        
+        // Collect all duties for the selected month from all employees
+        employees.forEach(employee => {
+            const duties = this.storage.getDutiesForMonth(employee, year, month);
+            duties.forEach(duty => {
+                allDuties.push({
+                    ...duty,
+                    employee: employee
+                });
+            });
+        });
+        
+        // Sort by date
+        allDuties.sort((a, b) => a.date - b.date);
+        
+        allDuties.forEach(duty => {
+            const isQual = this.calculator.isQualifyingDay(duty.date);
+            const dateStr = duty.date.toLocaleDateString('de-DE');
+            const weekday = weekdays[duty.date.getDay()];
+            const dayType = isQual ? 'WE-Tag' : 'Werktag (WT)';
+            
+            csv += `${dateStr};${weekday};${escapeCSV(duty.employee)};${duty.share.toFixed(1).replace('.', ',')};${dayType}\n`;
+        });
+        
+        csv += '\n\n';
+        
+        // === Sheet 2: Monatliche Auswertung ===
+        csv += `AUSWERTUNG ${monthNames[month - 1]} ${year}\n`;
+        csv += 'Mitarbeiter;Normale Tage;WE/Feiertag Tage;Abzug;Normale Tage (bezahlt);WE/Feiertag (bezahlt);Schwelle erreicht;Bonus Normal;Bonus WE;Gesamtbonus (EUR)\n';
+        
+        const employeeDuties = this.storage.getAllEmployeeDutiesForMonth(year, month);
+        const results = this.calculator.calculateAllEmployees(employeeDuties);
+        
+        let totalBonus = 0;
+        
+        for (const [employeeName, result] of Object.entries(results)) {
+            const threshold = result.thresholdReached ? 'JA' : 'NEIN';
+            
+            totalBonus += result.totalBonus;
+            
+            csv += `${escapeCSV(employeeName)};`;
+            csv += `${result.normalDays.toFixed(1).replace('.', ',')};`;
+            csv += `${result.qualifyingDays.toFixed(1).replace('.', ',')};`;
+            csv += `${result.qualifyingDaysDeducted.toFixed(1).replace('.', ',')};`;
+            csv += `${result.normalDaysPaid.toFixed(1).replace('.', ',')};`;
+            csv += `${result.qualifyingDaysPaid.toFixed(1).replace('.', ',')};`;
+            csv += `${threshold};`;
+            csv += `${result.bonusNormalDays.toFixed(2).replace('.', ',')};`;
+            csv += `${result.bonusQualifyingDays.toFixed(2).replace('.', ',')};`;
+            csv += `${result.totalBonus.toFixed(2).replace('.', ',')}\n`;
+        }
+        
+        csv += `\nGESAMT;;;;;;;;;${totalBonus.toFixed(2).replace('.', ',')}\n`;
+        
+        csv += '\n\n';
+        csv += 'LEGENDE\n';
+        csv += 'Normale Tage;Montag-Donnerstag ohne Feiertag/Vortag\n';
+        csv += 'WE/Feiertag Tage;"Freitag, Samstag, Sonntag, Feiertag oder Tag vor Feiertag"\n';
+        csv += 'Schwelle;"Mindestens 2,0 WE-Einheiten für Bonuszahlung erforderlich"\n';
+        csv += 'Sätze;"Normale Tage = 250 EUR/Einheit, WE/Feiertag = 450 EUR/Einheit"\n';
+        csv += 'Abzug;"Bei Erreichen der Schwelle wird 1,0 WE-Einheit abgezogen"\n';
+        
+        // Download CSV file
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Dienstplan_${year}_${String(month).padStart(2, '0')}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        this.showToast('CSV wurde exportiert. Öffnen Sie die Datei mit Excel oder LibreOffice.', 'success');
     }
 
     /**
