@@ -460,10 +460,12 @@
         <p style="color: #666;">Daten werden automatisch im Browser gespeichert (localStorage).</p>
 
         <div style="margin: 20px 0;">
+            <button onclick="app.exportCSV()" style="background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">📊 Excel/CSV Export</button>
             <button onclick="app.exportData()">Daten exportieren (JSON)</button>
             <input type="file" id="importFile" accept=".json" onchange="app.importData(this)" style="display:none">
             <button onclick="document.getElementById('importFile').click()">Daten importieren</button>
         </div>
+        <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">💡 <strong>Tipp:</strong> CSV-Dateien können direkt mit Excel, LibreOffice oder Google Sheets geöffnet werden.</p>
 
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
             <h4 style="color: #dc3545;">Gefahrenzone</h4>
@@ -961,6 +963,125 @@ class DienstplanApp {
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
+    }
+
+    /**
+     * Export data as CSV (Excel-compatible) - Beginner-friendly format
+     * Exports two sheets: 1) All duties (Dienste) 2) Monthly summary (Auswertung)
+     */
+    exportCSV() {
+        const m = parseInt(document.getElementById('selectMonth').value);
+        const y = parseInt(document.getElementById('selectYear').value);
+        
+        // Helper function to escape CSV values (handles semicolons, quotes, newlines)
+        const escapeCSV = (value) => {
+            const str = String(value);
+            if (str.includes(';') || str.includes('"') || str.includes('\n')) {
+                return '"' + str.replace(/"/g, '""') + '"';
+            }
+            return str;
+        };
+        
+        // Build CSV content with BOM for Excel UTF-8 support
+        let csv = '\uFEFF'; // UTF-8 BOM for Excel
+        
+        // === Sheet 1: Dienste (All Duties) ===
+        csv += 'ALLE DIENSTE\n';
+        csv += 'Datum;Wochentag;Mitarbeiter;Anteil;Tagestyp\n';
+        
+        // Sort duties by date
+        const sortedDuties = [...this.duties].sort((a, b) => a.date.localeCompare(b.date));
+        
+        sortedDuties.forEach(duty => {
+            const date = new Date(duty.date);
+            const dayInfo = this.getDayTypeInfo(date);
+            const isQual = this.isQualifyingDay(date);
+            const dateStr = date.toLocaleDateString('de-DE');
+            const weekday = WEEKDAYS[date.getDay()];
+            const dayType = isQual ? 'WE-Tag' : 'Werktag (WT)';
+            
+            csv += `${dateStr};${weekday};${escapeCSV(duty.name)};${duty.share.toFixed(1).replace('.', ',')};${dayType}\n`;
+        });
+        
+        csv += '\n\n';
+        
+        // === Sheet 2: Monatliche Auswertung ===
+        csv += `AUSWERTUNG ${MONTHS[m]} ${y}\n`;
+        csv += 'Mitarbeiter;WT (Einheiten);WE Freitag;WE Andere;WE Gesamt;Schwelle erreicht;Auszahlung (EUR)\n';
+        
+        // Filter duties for selected month
+        const monthDuties = this.duties.filter(d => {
+            const date = new Date(d.date);
+            return date.getMonth() === m && date.getFullYear() === y;
+        });
+        
+        // Group by employee
+        const stats = {};
+        monthDuties.forEach(d => {
+            if (!stats[d.name]) {
+                stats[d.name] = { wt: 0, we_fr: 0, we_other: 0 };
+            }
+            
+            const date = new Date(d.date);
+            const isQual = this.isQualifyingDay(date);
+            const isFri = this.isFriday(date);
+            
+            if (!isQual) {
+                stats[d.name].wt += d.share;
+            } else {
+                if (isFri) {
+                    stats[d.name].we_fr += d.share;
+                } else {
+                    stats[d.name].we_other += d.share;
+                }
+            }
+        });
+        
+        let totalPayout = 0;
+        
+        for (const [name, data] of Object.entries(stats)) {
+            const we_total = data.we_fr + data.we_other;
+            const thresholdReached = we_total >= (CONFIG.THRESHOLD - CONFIG.TOLERANCE);
+            
+            let payout = 0;
+            
+            if (thresholdReached) {
+                const wt_pay = data.wt * CONFIG.RATE_WT;
+                let deduct = CONFIG.DEDUCTION;
+                const deduct_fr = Math.min(deduct, data.we_fr);
+                const deduct_other = Math.max(0, deduct - deduct_fr);
+                const paid_fr = Math.max(0, data.we_fr - deduct_fr);
+                const paid_other = Math.max(0, data.we_other - deduct_other);
+                const we_pay = (paid_fr + paid_other) * CONFIG.RATE_WE;
+                payout = wt_pay + we_pay;
+            }
+            
+            totalPayout += payout;
+            
+            const threshold = thresholdReached ? 'JA' : 'NEIN';
+            
+            csv += `${escapeCSV(name)};${data.wt.toFixed(1).replace('.', ',')};${data.we_fr.toFixed(1).replace('.', ',')};${data.we_other.toFixed(1).replace('.', ',')};${we_total.toFixed(1).replace('.', ',')};${threshold};${payout.toFixed(2).replace('.', ',')}\n`;
+        }
+        
+        csv += `\nGESAMT;;;;;;${totalPayout.toFixed(2).replace('.', ',')}\n`;
+        
+        csv += '\n\n';
+        csv += 'LEGENDE\n';
+        csv += 'WT;Werktag (Montag-Donnerstag ohne Feiertag/Vortag)\n';
+        csv += 'WE-Tag;"Freitag, Samstag, Sonntag, Feiertag oder Tag vor Feiertag"\n';
+        csv += 'Schwelle;"Mindestens 2,0 WE-Einheiten für Bonuszahlung erforderlich"\n';
+        csv += 'Sätze;"WT = 250 EUR/Einheit, WE = 450 EUR/Einheit (abzgl. 1,0 Abzug)"\n';
+        
+        // Download CSV file
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.href = url;
+        downloadAnchor.download = `Dienstplan_${y}_${String(m + 1).padStart(2, '0')}.csv`;
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        URL.revokeObjectURL(url);
     }
 
     importData(input) {
