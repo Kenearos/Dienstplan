@@ -53,11 +53,11 @@ Die ältere Implementierung nutzt eine andere Logik:
    - **WE-Tag** (Weekend): Fr-So + Feiertag + Vortag Feiertag
 
 2. **Bonusberechnung**:
-   - **WT-Tage** werden **immer** mit 250€ vergütet
+   - **WT-Tage** werden bei Erreichen der Schwelle mit 250€ vergütet
    - **WE-Tage** nur vergütet wenn ≥ 2.0 WE-Einheiten:
      - Bei Erreichen: 450€ pro WE-Tag
      - Dann Abzug von 2.0 WE-Einheiten (Freitag-Priorität)
-     - Unter Schwellenwert: WE-Dienste = 0€ (nicht als WT vergütet)
+     - Unter Schwellenwert: Keine Bonuszahlung (weder WE noch WT)
 
 ### Wichtiger Unterschied - Beispiel
 
@@ -203,17 +203,12 @@ this.RATE_WEEKEND = 500;  // Statt 450
 ```
 
 ### Abzug ändern (Web-App)
-Aktuell ist der Abzug fest auf 2.0 kodiert in `webapp/calculator.js`, Zeile 112:
-```javascript
-qualifyingDaysDeducted = 2.0;
-```
-
-Um dies flexibel zu machen, könnte man hinzufügen:
+Der Abzug ist als Konstante in `webapp/calculator.js` definiert:
 ```javascript
 this.DEDUCTION_AMOUNT = 2.0;  // Im Constructor
-// Dann verwenden:
-qualifyingDaysDeducted = this.DEDUCTION_AMOUNT;
 ```
+
+Um den Abzugswert zu ändern, einfach diesen Wert anpassen.
 
 ## Code-Architektur
 

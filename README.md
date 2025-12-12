@@ -103,7 +103,7 @@ Die Datei landet in `output/Dienstplan_YYYY_MM_NRW.xlsx`.
 
 - **WE-Tag**: Fr/Sa/So + Feiertag + Vortag Feiertag
 - **WT-Tag**: Alle anderen Tage (250 € pro Einheit)
-- **WE-Vergütung**: Nur wenn Monatssumme ≥ 2,0 WE-Einheiten → 450 €/Einheit, dann Abzug 1,0 (zuerst von Freitag)
+- **WE-Vergütung**: Nur wenn Monatssumme ≥ 2,0 WE-Einheiten → 450 €/Einheit, dann Abzug 2,0 (zuerst von Freitag)
 - **Unter Schwelle**: WE-Dienste = 0 € (nicht als WT vergütet)
 
 Details siehe `SPECIFICATION.md`.

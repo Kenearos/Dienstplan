@@ -110,8 +110,8 @@ Dienste:
 
 Erwartung:
 - Normale Tage: 0.5 × 250€ = 125€
-- Qualifizierende Tage: (2.5 - 1.0) × 450€ = 675€
-- Gesamt: 800€
+- Qualifizierende Tage: (2.5 - 2.0) × 450€ = 225€
+- Gesamt: 350€
 ```
 
 ## Tests erweitern

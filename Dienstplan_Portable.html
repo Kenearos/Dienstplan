@@ -448,7 +448,7 @@
             <h4>Berechnungsregeln (Variante 2 - Streng)</h4>
             <p>
                 <strong>Schwelle:</strong> Gesamter Bonus wird nur gezahlt, wenn WE-Einheiten &ge; 2,0.<br>
-                <strong>Bei Erreichen:</strong> WT = 250 EUR/Einheit, WE = 450 EUR/Einheit (abzgl. 1,0 Einheit Abzug).<br>
+                <strong>Bei Erreichen:</strong> WT = 250 EUR/Einheit, WE = 450 EUR/Einheit (abzgl. 2,0 Einheiten Abzug).<br>
                 <strong>Unter Schwelle:</strong> Keine Auszahlung (weder WT noch WE).<br>
                 <strong>WE-Tage:</strong> Fr, Sa, So, Feiertage und Vortage von Feiertagen.
             </p>
@@ -576,7 +576,7 @@ const CONFIG = {
     RATE_WT: 250,
     RATE_WE: 450,
     THRESHOLD: 2.0,
-    DEDUCTION: 1.0,
+    DEDUCTION: 2.0,
     TOLERANCE: 0.0001
 };
 
@@ -1071,7 +1071,7 @@ class DienstplanApp {
         csv += 'WT;Werktag (Montag-Donnerstag ohne Feiertag/Vortag)\n';
         csv += 'WE-Tag;"Freitag, Samstag, Sonntag, Feiertag oder Tag vor Feiertag"\n';
         csv += 'Schwelle;"Mindestens 2,0 WE-Einheiten für Bonuszahlung erforderlich"\n';
-        csv += 'Sätze;"WT = 250 EUR/Einheit, WE = 450 EUR/Einheit (abzgl. 1,0 Abzug)"\n';
+        csv += 'Sätze;"WT = 250 EUR/Einheit, WE = 450 EUR/Einheit (abzgl. 2,0 Abzug)"\n';
         
         // Download CSV file
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -1296,20 +1296,23 @@ class DienstplanApp {
             
             totalBonus += bonus;
             
-            // Generate note for this employee
+            // Generate note for this employee - cleaner, more professional format
             const safeName = this.sanitizeName(name);
-            let note = `<b>${safeName}</b>: `;
+            let note = '';
             
             if (!thresholdReached) {
-                note += `Erreicht das Bonussystem nicht (nur ${we_total.toFixed(1)} WE-Einheiten, mind. 2,0 erforderlich).`;
+                note = `<b>${safeName}</b> erreicht die Mindestschwelle nicht (${we_total.toFixed(1)} von ${CONFIG.THRESHOLD.toFixed(1)} WE-Einheiten) und erhält daher keine Bonuszahlung.`;
             } else {
-                const details = [];
-                if (data.wt > 0) details.push(`${data.wt.toFixed(1)} WT × 250€`);
-                if (data.we_fr > 0 || data.we_other > 0) {
-                    const paid_we = we_total - 1.0;
-                    details.push(`${paid_we.toFixed(1)} WE × 450€ (abzgl. 1,0 Abzug von ${deductedFrom})`);
+                const paid_we = we_total - CONFIG.DEDUCTION;
+                let breakdown = [];
+                if (data.wt > 0) breakdown.push(`${data.wt.toFixed(1)} WT-Einheiten à ${CONFIG.RATE_WT} €`);
+                if (paid_we > 0) breakdown.push(`${paid_we.toFixed(1)} WE-Einheiten à ${CONFIG.RATE_WE} €`);
+                
+                note = `<b>${safeName}</b> erhält eine Bonuszahlung von <span style="color: #28a745; font-weight: bold;">${this.formatCurrency(bonus)}</span>`;
+                if (breakdown.length > 0) {
+                    note += ` (${breakdown.join(' + ')})`;
                 }
-                note += `Erhält ${this.formatCurrency(bonus)}. ${details.join(', ')}.`;
+                note += '.';
             }
             employeeNotes.push(note);
             
@@ -1370,7 +1373,7 @@ class DienstplanApp {
         <li><strong>Vergütung bei Erreichen der Schwelle:</strong>
             <ul>
                 <li>Werktage (WT): 250 € pro Einheit</li>
-                <li>WE-Tage: 450 € pro Einheit (abzüglich 1,0 Einheit Abzug, Freitag zuerst)</li>
+                <li>WE-Tage: 450 € pro Einheit (abzüglich 2,0 Einheiten Abzug, Freitag zuerst)</li>
             </ul>
         </li>
         <li><strong>Unter Schwelle:</strong> Keine Bonuszahlung (weder WT noch WE)</li>

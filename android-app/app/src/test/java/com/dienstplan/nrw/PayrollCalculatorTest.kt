@@ -52,7 +52,7 @@ class PayrollCalculatorTest {
     
     /**
      * Test Case 2: Exactly at threshold (2.0 WE)
-     * Expected: WE payout = 0€ (0.0 units after deduction), threshold reached
+     * Expected: WE payout = 0€ (0.0 units after 2.0 deduction), threshold reached
      */
     @Test
     fun testExactlyAtThreshold() {
@@ -74,7 +74,7 @@ class PayrollCalculatorTest {
     
     /**
      * Test Case 3: Over threshold (3.5 WE)
-     * Expected: WE payout = 675€ (1.5 units after deduction)
+     * Expected: WE payout = 675€ (1.5 units after 2.0 deduction)
      */
     @Test
     fun testOverThreshold() {
@@ -117,6 +117,7 @@ class PayrollCalculatorTest {
         assertEquals(0.4, result.deductionFriday, 0.001)  // All Friday deducted first
         assertEquals(1.6, result.deductionOther, 0.001)   // Rest from other (1.6 to reach 2.0 total)
         assertEquals(0.0, result.wePaid, 0.001)
+        assertEquals(0.0, result.payoutWE, 0.001)
     }
     
     /**
@@ -144,7 +145,7 @@ class PayrollCalculatorTest {
         assertFalse(resultA.thresholdReached)
         assertEquals(0.0, resultA.payoutWE, 0.001)
         
-        // B: above threshold
+        // B: above threshold (2.5 WE - 2.0 deduction = 0.5 paid)
         assertTrue(resultB.thresholdReached)
         assertEquals(2.5, resultB.weTotal, 0.001)
         assertEquals(0.5, resultB.wePaid, 0.001)
