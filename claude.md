@@ -39,7 +39,7 @@ Die Web-App implementiert eine vereinfachte Logik:
 
 2. **Bonusberechnung**:
    - Mindestens **2.0 qualifizierende Tage** erforderlich
-   - Bei Erreichen: **1.0 qualifizierender Tag** wird abgezogen
+   - Bei Erreichen: **2.0 qualifizierende Tage** werden abgezogen
    - **Alle übrigen Tage** werden bezahlt:
      - Normale Tage (Mo-Do, kein Feiertag): 250€
      - Qualifizierende Tage: 450€
@@ -56,7 +56,7 @@ Die ältere Implementierung nutzt eine andere Logik:
    - **WT-Tage** werden **immer** mit 250€ vergütet
    - **WE-Tage** nur vergütet wenn ≥ 2.0 WE-Einheiten:
      - Bei Erreichen: 450€ pro WE-Tag
-     - Dann Abzug von 1.0 WE-Einheit (Freitag-Priorität)
+     - Dann Abzug von 2.0 WE-Einheiten (Freitag-Priorität)
      - Unter Schwellenwert: WE-Dienste = 0€ (nicht als WT vergütet)
 
 ### Wichtiger Unterschied - Beispiel
@@ -168,7 +168,7 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 ### Testfall 1: Schwellenwert genau erreicht
 - 1 × Freitag (1.0)
 - 1 × Samstag (1.0)
-- Erwartung: 2.0 qualifizierende Tage → 1.0 abgezogen → 1.0 × 450€ = **450€**
+- Erwartung: 2.0 qualifizierende Tage → 2.0 abgezogen → 0.0 × 450€ = **0€**
 
 ### Testfall 2: Schwellenwert nicht erreicht
 - 1 × Samstag (1.0)
@@ -179,13 +179,13 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 - 2 × Montag (2.0)
 - 2 × Samstag (2.0)
 - Erwartung:
-  - 2.0 qualifizierende → -1.0 Abzug → 1.0 bezahlt
-  - Bonus: (2 × 250€) + (1 × 450€) = **950€**
+  - 2.0 qualifizierende → -2.0 Abzug → 0.0 bezahlt
+  - Bonus: (2 × 250€) + (0 × 450€) = **500€**
 
 ### Testfall 4: Feiertag + Vortag
 - 1 × Donnerstag vor Karfreitag (qualifizierend!)
 - 1 × Karfreitag (Feiertag, qualifizierend!)
-- Erwartung: 2.0 qualifizierende → -1.0 → 1.0 × 450€ = **450€**
+- Erwartung: 2.0 qualifizierende → -2.0 → 0.0 × 450€ = **0€**
 
 ## Häufige Anpassungen
 
@@ -203,14 +203,14 @@ this.RATE_WEEKEND = 500;  // Statt 450
 ```
 
 ### Abzug ändern (Web-App)
-Aktuell ist der Abzug fest auf 1.0 kodiert in `webapp/calculator.js`, Zeile 66:
+Aktuell ist der Abzug fest auf 2.0 kodiert in `webapp/calculator.js`, Zeile 112:
 ```javascript
-qualifyingDaysDeducted = 1.0;
+qualifyingDaysDeducted = 2.0;
 ```
 
 Um dies flexibel zu machen, könnte man hinzufügen:
 ```javascript
-this.DEDUCTION_AMOUNT = 1.0;  // Im Constructor
+this.DEDUCTION_AMOUNT = 2.0;  // Im Constructor
 // Dann verwenden:
 qualifyingDaysDeducted = this.DEDUCTION_AMOUNT;
 ```

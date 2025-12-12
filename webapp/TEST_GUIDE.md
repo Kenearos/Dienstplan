@@ -40,8 +40,8 @@ Automatische Test Suite für die Web-App.
 ### 3. Calculator - Bonusberechnung
 **Schwellenwert-Tests:**
 - ✅ Unter Schwellenwert (1.0 WE-Tag) → 0€
-- ✅ Genau Schwellenwert (2.0 WE-Tage) → 450€
-- ✅ Über Schwellenwert (3.0 WE-Tage) → 900€
+- ✅ Genau Schwellenwert (2.0 WE-Tage) → 0€
+- ✅ Über Schwellenwert (3.0 WE-Tage) → 450€
 
 **Gemischte Dienste:**
 - ✅ Normale Tage + WE-Tage korrekt berechnet
@@ -84,8 +84,8 @@ Dienste:
 Erwartung:
 - Qualifizierende Tage: 2.0
 - Schwellenwert: ✅ Erreicht
-- Abzug: -1.0
-- Bezahlt: 1.0 × 450€ = 450€
+- Abzug: -2.0
+- Bezahlt: 0.0 × 450€ = 0€
 ```
 
 ### Beispiel 2: Gemischte Dienste
@@ -96,8 +96,8 @@ Dienste:
 
 Erwartung:
 - Normale Tage: 2.0 × 250€ = 500€
-- Qualifizierende Tage: (2.0 - 1.0) × 450€ = 450€
-- Gesamt: 950€
+- Qualifizierende Tage: (2.0 - 2.0) × 450€ = 0€
+- Gesamt: 500€
 ```
 
 ### Beispiel 3: Halbe Dienste
