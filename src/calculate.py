@@ -14,7 +14,7 @@ from collections import defaultdict
 SATZ_WT = 250  # Euro für Werktag
 SATZ_WE = 450  # Euro für Wochenende
 WE_SCHWELLE = 2.0  # Mindestanzahl WE-Dienste für Vergütung
-ABZUG = 2.0  # Abzug nach Erreichen der Schwelle
+ABZUG = 1.0  # Abzug nach Erreichen der Schwelle
 
 
 def load_holidays(wb):

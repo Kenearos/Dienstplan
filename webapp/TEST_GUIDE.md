@@ -84,8 +84,8 @@ Dienste:
 Erwartung:
 - Qualifizierende Tage: 2.0
 - Schwellenwert: ✅ Erreicht
-- Abzug: -2.0
-- Bezahlt: 0.0 × 450€ = 0€
+- Abzug: -1.0
+- Bezahlt: 1.0 × 450€ = 450€
 ```
 
 ### Beispiel 2: Gemischte Dienste
@@ -96,8 +96,8 @@ Dienste:
 
 Erwartung:
 - Normale Tage: 2.0 × 250€ = 500€
-- Qualifizierende Tage: (2.0 - 2.0) × 450€ = 0€
-- Gesamt: 500€
+- Qualifizierende Tage: (2.0 - 1.0) × 450€ = 450€
+- Gesamt: 950€
 ```
 
 ### Beispiel 3: Halbe Dienste

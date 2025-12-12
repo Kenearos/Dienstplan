@@ -12,11 +12,11 @@ import kotlin.math.min
  * Business rules:
  * - WE-Tag (Weekend/Holiday): Friday, Saturday, Sunday, public holiday, day before public holiday
  * - WT-Tag (Weekday): All other days
- * - WT compensation: Always 250€ per unit
+ * - WT compensation: 250€ per unit (only if threshold reached)
  * - WE compensation: Only paid if monthly total >= 2.0 WE units (threshold)
- *   - If threshold reached: 450€ per WE unit, then deduct exactly 2.0 WE units
+ *   - If threshold reached: 450€ per WE unit, then deduct exactly 1.0 WE unit
  *   - Deduction priority: Friday first, then other WE days
- *   - Below threshold: 0€ for WE shifts (NOT converted to WT)
+ *   - Below threshold: 0€ for all shifts (neither WT nor WE)
  */
 class PayrollCalculator {
     
@@ -24,7 +24,7 @@ class PayrollCalculator {
         private const val RATE_WT = 250.0  // Satz_WT
         private const val RATE_WE = 450.0  // Satz_WE
         private const val WE_THRESHOLD = 2.0  // WE_Schwelle
-        private const val DEDUCTION_AFTER_THRESHOLD = 2.0  // Abzug_nach_WE_Schwelle
+        private const val DEDUCTION_AFTER_THRESHOLD = 1.0  // Abzug_nach_WE_Schwelle
         private const val TOLERANCE = 0.0001  // For floating-point comparisons
     }
     

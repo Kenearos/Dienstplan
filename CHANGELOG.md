@@ -26,7 +26,7 @@ Added native Android mobile app for duty roster management with the same NRW Var
 - Same WT-Tag classification
 - Same compensation rates (WT: 250€, WE: 450€)
 - Same threshold logic (≥ 2.0 WE units)
-- Same deduction rules (2.0 units, Friday priority)
+- Same deduction rules (1.0 unit, Friday priority)
 - Same Variante 2 behavior (no WE compensation below threshold)
 
 **Testing:**

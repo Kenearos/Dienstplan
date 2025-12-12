@@ -4,7 +4,7 @@ Stand: 14.11.2025 (Deutschland)
 
 ## Ziel
 
-Diese README beschreibt vollständig, wie eine Excel-Arbeitsmappe aufgebaut wird, die Monatsdienste erfasst und automatisch die Vergütung ermittelt – inkl. Erkennung von Wochenend-/Feiertagsdiensten (inkl. Vortag), Schwellenlogik und Abzug 1,0 WE-Einheit. Variante 2 (streng) ist aktiv: WE-Dienste werden nur vergütet, wenn im Monat mindestens 2,0 WE-Einheiten erreicht werden; sonst 0 €. Wochentage (kein WE) werden stets vergütet.
+Diese README beschreibt vollständig, wie eine Excel-Arbeitsmappe aufgebaut wird, die Monatsdienste erfasst und automatisch die Vergütung ermittelt – inkl. Erkennung von Wochenend-/Feiertagsdiensten (inkl. Vortag), Schwellenlogik und Abzug 1,0 WE-Einheit nach Erreichen der Schwelle. Variante 2 (streng) ist aktiv: WE-Dienste werden nur vergütet, wenn im Monat mindestens 2,0 WE-Einheiten erreicht werden; sonst 0 €. Wochentage (kein WE) werden ebenfalls nur bei Erreichen der WE-Schwelle vergütet.
 
 Hinweise:
 - Region: Deutschland, Bundesland wählbar (steuert Feiertage).
@@ -30,7 +30,7 @@ Hinweise:
 - **WE** (WE-Tag):
   - Wenn Monats-Summe WE-Einheiten < 2,0 → Auszahlung 0 € für alle WE-Einheiten.
   - Wenn Monats-Summe WE-Einheiten ≥ 2,0 → Auszahlung 450 €/WE-Einheit,
-    anschließend Abzug genau 2,0 WE-Einheiten (max. 1× pro Person/Monat).
+    anschließend Abzug genau 1,0 WE-Einheit (max. 1× pro Person/Monat).
   - Abzugs-Priorität: zuerst aus Freitag-WE-Einheiten, Rest aus den übrigen WE-Einheiten (Sa/So/Feiertag/Vortag). Chronologie muss nicht nachgebildet werden; es genügt die Priorität nach Kategorie.
 
 ### Splits/Anteile
@@ -51,7 +51,7 @@ Hinweise:
 - Satz_WT = 250
 - Satz_WE = 450
 - WE_Schwelle = 2,0
-- Abzug_nach_WE_Schwelle = 2,0
+- Abzug_nach_WE_Schwelle = 1,0
 - BL_Auswahl = Dropdown (z. B. BW, BY, BE, …)
 - Monat_Auswahl = Datum (erster Tag des Zielmonats, z. B. 01.11.2025)
 - Variante = 2  (fix auf „streng")
