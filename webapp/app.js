@@ -526,7 +526,7 @@ class DienstplanApp {
         csv += 'WE/Feiertag Tage;"Freitag, Samstag, Sonntag, Feiertag oder Tag vor Feiertag"\n';
         csv += 'Schwelle;"Mindestens 2,0 WE-Einheiten für Bonuszahlung erforderlich"\n';
         csv += 'Sätze;"Normale Tage = 250 EUR/Einheit, WE/Feiertag = 450 EUR/Einheit"\n';
-        csv += 'Abzug;"Bei Erreichen der Schwelle wird 1,0 WE-Einheit abgezogen"\n';
+        csv += 'Abzug;"Bei Erreichen der Schwelle werden 2,0 WE-Einheiten abgezogen"\n';
         
         // Download CSV file
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -835,7 +835,7 @@ class DienstplanApp {
         <li><strong>Vergütung bei Erreichen der Schwelle:</strong>
             <ul>
                 <li>Werktage (WT): 250 € pro Einheit</li>
-                <li>WE-Tage: 450 € pro Einheit (abzüglich 1,0 Einheit Abzug, Freitag zuerst)</li>
+                <li>WE-Tage: 450 € pro Einheit (abzüglich 2,0 Einheiten Abzug, Freitag zuerst)</li>
             </ul>
         </li>
         <li><strong>Unter Schwelle:</strong> Keine Bonuszahlung (weder WT noch WE)</li>

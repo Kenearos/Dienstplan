@@ -448,7 +448,7 @@
             <h4>Berechnungsregeln (Variante 2 - Streng)</h4>
             <p>
                 <strong>Schwelle:</strong> Gesamter Bonus wird nur gezahlt, wenn WE-Einheiten &ge; 2,0.<br>
-                <strong>Bei Erreichen:</strong> WT = 250 EUR/Einheit, WE = 450 EUR/Einheit (abzgl. 1,0 Einheit Abzug).<br>
+                <strong>Bei Erreichen:</strong> WT = 250 EUR/Einheit, WE = 450 EUR/Einheit (abzgl. 2,0 Einheiten Abzug).<br>
                 <strong>Unter Schwelle:</strong> Keine Auszahlung (weder WT noch WE).<br>
                 <strong>WE-Tage:</strong> Fr, Sa, So, Feiertage und Vortage von Feiertagen.
             </p>
@@ -576,7 +576,7 @@ const CONFIG = {
     RATE_WT: 250,
     RATE_WE: 450,
     THRESHOLD: 2.0,
-    DEDUCTION: 1.0,
+    DEDUCTION: 2.0,
     TOLERANCE: 0.0001
 };
 
@@ -1071,7 +1071,7 @@ class DienstplanApp {
         csv += 'WT;Werktag (Montag-Donnerstag ohne Feiertag/Vortag)\n';
         csv += 'WE-Tag;"Freitag, Samstag, Sonntag, Feiertag oder Tag vor Feiertag"\n';
         csv += 'Schwelle;"Mindestens 2,0 WE-Einheiten für Bonuszahlung erforderlich"\n';
-        csv += 'Sätze;"WT = 250 EUR/Einheit, WE = 450 EUR/Einheit (abzgl. 1,0 Abzug)"\n';
+        csv += 'Sätze;"WT = 250 EUR/Einheit, WE = 450 EUR/Einheit (abzgl. 2,0 Abzug)"\n';
         
         // Download CSV file
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -1373,7 +1373,7 @@ class DienstplanApp {
         <li><strong>Vergütung bei Erreichen der Schwelle:</strong>
             <ul>
                 <li>Werktage (WT): 250 € pro Einheit</li>
-                <li>WE-Tage: 450 € pro Einheit (abzüglich 1,0 Einheit Abzug, Freitag zuerst)</li>
+                <li>WE-Tage: 450 € pro Einheit (abzüglich 2,0 Einheiten Abzug, Freitag zuerst)</li>
             </ul>
         </li>
         <li><strong>Unter Schwelle:</strong> Keine Bonuszahlung (weder WT noch WE)</li>

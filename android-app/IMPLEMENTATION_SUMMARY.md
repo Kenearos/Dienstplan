@@ -78,8 +78,8 @@ Implements NRW Variante 2 (streng) rules:
 #### Unit Tests (PayrollCalculatorTest.kt)
 Comprehensive test coverage including:
 1. **Under threshold test**: 1.75 WE + 1.0 WT → WE payout 0€, WT payout 250€
-2. **Exactly at threshold test**: 2.0 WE → WE payout 450€ (1.0 unit after deduction)
-3. **Over threshold test**: 3.5 WE → WE payout 1125€ (2.5 units after deduction)
+2. **Exactly at threshold test**: 2.0 WE → WE payout 0€ (0.0 units after 2.0 deduction)
+3. **Over threshold test**: 3.5 WE → WE payout 675€ (1.5 units after 2.0 deduction)
 4. **Friday deduction priority test**: Verifies deduction comes from Friday first
 5. **Multiple employees test**: Separate calculations per employee
 

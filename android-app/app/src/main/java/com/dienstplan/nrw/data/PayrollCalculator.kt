@@ -14,7 +14,7 @@ import kotlin.math.min
  * - WT-Tag (Weekday): All other days
  * - WT compensation: 250€ per unit (only if threshold reached)
  * - WE compensation: Only paid if monthly total >= 2.0 WE units (threshold)
- *   - If threshold reached: 450€ per WE unit, then deduct exactly 1.0 WE unit
+ *   - If threshold reached: 450€ per WE unit, then deduct exactly 2.0 WE units
  *   - Deduction priority: Friday first, then other WE days
  *   - Below threshold: 0€ for all shifts (neither WT nor WE)
  */
