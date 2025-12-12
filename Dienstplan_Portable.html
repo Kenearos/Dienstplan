@@ -1301,12 +1301,12 @@ class DienstplanApp {
             let note = '';
             
             if (!thresholdReached) {
-                note = `<b>${safeName}</b> erreicht die Mindestschwelle nicht (${we_total.toFixed(1)} von 2,0 WE-Einheiten) und erhält daher keine Bonuszahlung.`;
+                note = `<b>${safeName}</b> erreicht die Mindestschwelle nicht (${we_total.toFixed(1)} von ${CONFIG.THRESHOLD.toFixed(1)} WE-Einheiten) und erhält daher keine Bonuszahlung.`;
             } else {
-                const paid_we = we_total - 1.0;
+                const paid_we = we_total - CONFIG.DEDUCTION;
                 let breakdown = [];
-                if (data.wt > 0) breakdown.push(`${data.wt.toFixed(1)} WT-Einheiten à 250 €`);
-                if (paid_we > 0) breakdown.push(`${paid_we.toFixed(1)} WE-Einheiten à 450 €`);
+                if (data.wt > 0) breakdown.push(`${data.wt.toFixed(1)} WT-Einheiten à ${CONFIG.RATE_WT} €`);
+                if (paid_we > 0) breakdown.push(`${paid_we.toFixed(1)} WE-Einheiten à ${CONFIG.RATE_WE} €`);
                 
                 note = `<b>${safeName}</b> erhält eine Bonuszahlung von <span style="color: #28a745; font-weight: bold;">${this.formatCurrency(bonus)}</span>`;
                 if (breakdown.length > 0) {

@@ -738,7 +738,7 @@ class DienstplanApp {
             
             if (thresholdReached) {
                 const wt_pay = data.wt * this.calculator.RATE_NORMAL;
-                let deduct = 1.0;
+                let deduct = this.calculator.DEDUCTION_AMOUNT;
                 const deduct_fr = Math.min(deduct, data.we_fr);
                 const deduct_other = Math.max(0, deduct - deduct_fr);
                 const paid_fr = Math.max(0, data.we_fr - deduct_fr);
@@ -762,12 +762,12 @@ class DienstplanApp {
             let note = '';
             
             if (!thresholdReached) {
-                note = `<b>${safeName}</b> erreicht die Mindestschwelle nicht (${we_total.toFixed(1)} von 2,0 WE-Einheiten) und erhält daher keine Bonuszahlung.`;
+                note = `<b>${safeName}</b> erreicht die Mindestschwelle nicht (${we_total.toFixed(1)} von ${this.calculator.MIN_QUALIFYING_DAYS.toFixed(1)} WE-Einheiten) und erhält daher keine Bonuszahlung.`;
             } else {
-                const paid_we = we_total - 1.0;
+                const paid_we = we_total - this.calculator.DEDUCTION_AMOUNT;
                 let breakdown = [];
-                if (data.wt > 0) breakdown.push(`${data.wt.toFixed(1)} WT-Einheiten à 250 €`);
-                if (paid_we > 0) breakdown.push(`${paid_we.toFixed(1)} WE-Einheiten à 450 €`);
+                if (data.wt > 0) breakdown.push(`${data.wt.toFixed(1)} WT-Einheiten à ${this.calculator.RATE_NORMAL} €`);
+                if (paid_we > 0) breakdown.push(`${paid_we.toFixed(1)} WE-Einheiten à ${this.calculator.RATE_WEEKEND} €`);
                 
                 note = `<b>${safeName}</b> erhält eine Bonuszahlung von <span style="color: #28a745; font-weight: bold;">${this.calculator.formatCurrency(bonus)}</span>`;
                 if (breakdown.length > 0) {
