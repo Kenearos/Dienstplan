@@ -461,11 +461,12 @@
 
         <div style="margin: 20px 0;">
             <button onclick="app.exportCSV()" style="background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">📊 Excel/CSV Export</button>
+            <button onclick="app.exportBonusReport()" style="background: #4472C4; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">📝 Bonus-Bericht</button>
             <button onclick="app.exportData()">Daten exportieren (JSON)</button>
             <input type="file" id="importFile" accept=".json" onchange="app.importData(this)" style="display:none">
             <button onclick="document.getElementById('importFile').click()">Daten importieren</button>
         </div>
-        <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">💡 <strong>Tipp:</strong> CSV-Dateien können direkt mit Excel, LibreOffice oder Google Sheets geöffnet werden.</p>
+        <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">💡 <strong>Tipp:</strong> CSV-Dateien können direkt mit Excel, LibreOffice oder Google Sheets geöffnet werden. Der Bonus-Bericht öffnet sich in einem neuen Fenster zum Drucken.</p>
 
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
             <h4 style="color: #dc3545;">Gefahrenzone</h4>
@@ -1082,6 +1083,315 @@ class DienstplanApp {
         downloadAnchor.click();
         downloadAnchor.remove();
         URL.revokeObjectURL(url);
+    }
+
+    /**
+     * Export a formal bonus report in HTML format
+     * Opens in a new window for printing or saving as PDF
+     */
+    exportBonusReport() {
+        const m = parseInt(document.getElementById('selectMonth').value);
+        const y = parseInt(document.getElementById('selectYear').value);
+        
+        // Calculate next month for payout date
+        const payoutMonth = (m + 1) % 12;
+        const payoutYear = m === 11 ? y + 1 : y;
+        
+        // Filter duties for selected month
+        const monthDuties = this.duties.filter(d => {
+            const date = new Date(d.date);
+            return date.getMonth() === m && date.getFullYear() === y;
+        });
+        
+        if (monthDuties.length === 0) {
+            alert('Keine Dienste für diesen Monat vorhanden.');
+            return;
+        }
+        
+        // Group duties by employee and by weekday
+        const employeeData = {};
+        monthDuties.forEach(d => {
+            if (!employeeData[d.name]) {
+                employeeData[d.name] = {
+                    duties: [],
+                    byWeekday: { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] }, // Sun=0 to Sat=6
+                    wt: 0,
+                    we_fr: 0,
+                    we_other: 0
+                };
+            }
+            
+            const date = new Date(d.date);
+            const weekday = date.getDay();
+            const isQual = this.isQualifyingDay(date);
+            const isFri = this.isFriday(date);
+            
+            employeeData[d.name].duties.push(d);
+            employeeData[d.name].byWeekday[weekday].push({
+                ...d,
+                date: date,
+                isQual: isQual,
+                dayInfo: this.getDayTypeInfo(date)
+            });
+            
+            if (!isQual) {
+                employeeData[d.name].wt += d.share;
+            } else if (isFri) {
+                employeeData[d.name].we_fr += d.share;
+            } else {
+                employeeData[d.name].we_other += d.share;
+            }
+        });
+        
+        // Build HTML report
+        let html = `<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Bonuszahlungen ${MONTHS[m]} ${y}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            color: #333;
+            line-height: 1.6;
+        }
+        h3 {
+            color: #4472C4;
+            border-bottom: 2px solid #4472C4;
+            padding-bottom: 10px;
+        }
+        h5 {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #4472C4;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .employee-name {
+            text-align: left;
+            font-weight: bold;
+        }
+        .bonus-amount {
+            font-weight: bold;
+            color: #28a745;
+        }
+        .no-bonus {
+            color: #dc3545;
+        }
+        .duty-cell {
+            font-size: 0.85em;
+        }
+        .duty-cell .we-tag {
+            background: #d4edda;
+            color: #155724;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        .duty-cell .wt-tag {
+            background: #e7e7e7;
+            color: #666;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        .employee-note {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 3px solid #4472C4;
+        }
+        .employee-note b {
+            color: #4472C4;
+        }
+        .summary {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e7f3ff;
+            border-radius: 8px;
+        }
+        .total {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4472C4;
+        }
+        @media print {
+            body { margin: 20px; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+<div class="no-print" style="margin-bottom: 20px; padding: 10px; background: #fff3cd; border-radius: 5px;">
+    <button onclick="window.print()" style="padding: 8px 16px; background: #4472C4; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">🖨️ Drucken / Als PDF speichern</button>
+    <span style="color: #666;">Tipp: Beim Drucken "Als PDF speichern" wählen für eine PDF-Datei.</span>
+</div>
+
+<h3>Bonuszahlungen</h3>
+<h5>Monat ${MONTHS[m]} ${y} mit Auszahlung Ende ${MONTHS[payoutMonth]} ${payoutYear}</h5>
+
+<p>Für die im ${MONTHS[m]} ${y} geleisteten Bereitschaftsdienste ergeben sich folgende Bonuszahlungen:</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Mitarbeiter</th>
+            <th>Mo</th>
+            <th>Di</th>
+            <th>Mi</th>
+            <th>Do</th>
+            <th>Fr</th>
+            <th>Sa</th>
+            <th>So</th>
+            <th>Bonus (€)</th>
+        </tr>
+    </thead>
+    <tbody>`;
+        
+        let totalBonus = 0;
+        const employeeNotes = [];
+        
+        for (const [name, data] of Object.entries(employeeData)) {
+            const we_total = data.we_fr + data.we_other;
+            const thresholdReached = we_total >= (CONFIG.THRESHOLD - CONFIG.TOLERANCE);
+            
+            let bonus = 0;
+            let deductedFrom = '';
+            
+            if (thresholdReached) {
+                const wt_pay = data.wt * CONFIG.RATE_WT;
+                let deduct = CONFIG.DEDUCTION;
+                const deduct_fr = Math.min(deduct, data.we_fr);
+                const deduct_other = Math.max(0, deduct - deduct_fr);
+                const paid_fr = Math.max(0, data.we_fr - deduct_fr);
+                const paid_other = Math.max(0, data.we_other - deduct_other);
+                const we_pay = (paid_fr + paid_other) * CONFIG.RATE_WE;
+                bonus = wt_pay + we_pay;
+                
+                // Determine what was deducted for the note
+                if (deduct_fr > 0 && deduct_other > 0) {
+                    deductedFrom = 'Freitag und weiterer WE-Tag';
+                } else if (deduct_fr > 0) {
+                    deductedFrom = 'Freitag';
+                } else {
+                    deductedFrom = 'WE-Tag (Sa/So/Feiertag)';
+                }
+            }
+            
+            totalBonus += bonus;
+            
+            // Generate note for this employee
+            const safeName = this.sanitizeName(name);
+            let note = `<b>${safeName}</b>: `;
+            
+            if (!thresholdReached) {
+                note += `Erreicht das Bonussystem nicht (nur ${we_total.toFixed(1)} WE-Einheiten, mind. 2,0 erforderlich).`;
+            } else {
+                const details = [];
+                if (data.wt > 0) details.push(`${data.wt.toFixed(1)} WT × 250€`);
+                if (data.we_fr > 0 || data.we_other > 0) {
+                    const paid_we = we_total - 1.0;
+                    details.push(`${paid_we.toFixed(1)} WE × 450€ (abzgl. 1,0 Abzug von ${deductedFrom})`);
+                }
+                note += `Erhält ${this.formatCurrency(bonus)}. ${details.join(', ')}.`;
+            }
+            employeeNotes.push(note);
+            
+            // Build table row
+            html += `
+        <tr>
+            <td class="employee-name">${safeName}</td>`;
+            
+            // Days: Mo(1), Di(2), Mi(3), Do(4), Fr(5), Sa(6), So(0)
+            const dayOrder = [1, 2, 3, 4, 5, 6, 0];
+            
+            for (const dayIdx of dayOrder) {
+                const dayDuties = data.byWeekday[dayIdx];
+                if (dayDuties.length === 0) {
+                    html += `<td></td>`;
+                } else {
+                    let cellContent = '';
+                    dayDuties.forEach(duty => {
+                        const dateStr = duty.date.getDate() + '.';
+                        const shareStr = duty.share === 0.5 ? '½' : '';
+                        const amountStr = duty.isQual ? `${Math.round(duty.share * CONFIG.RATE_WE)}€` : `${Math.round(duty.share * CONFIG.RATE_WT)}€`;
+                        const tag = duty.isQual ? 'we-tag' : 'wt-tag';
+                        const extraInfo = duty.dayInfo.type === 'holiday' ? ' (Feiertag)' : 
+                                         duty.dayInfo.type === 'preHoliday' ? ' (Vor Feiertag)' : '';
+                        
+                        cellContent += `<span class="${tag}">${shareStr}X${extraInfo}</span><br><small>${amountStr}</small><br>`;
+                    });
+                    html += `<td class="duty-cell">${cellContent}</td>`;
+                }
+            }
+            
+            html += `
+            <td class="${bonus > 0 ? 'bonus-amount' : 'no-bonus'}">${bonus > 0 ? this.formatCurrency(bonus) : '-'}</td>
+        </tr>`;
+        }
+        
+        html += `
+    </tbody>
+</table>
+
+<div class="summary">
+    <p class="total">Gesamtsumme: ${this.formatCurrency(totalBonus)}</p>
+</div>
+
+<h4>Erläuterungen zu den einzelnen Mitarbeitern:</h4>
+`;
+        
+        employeeNotes.forEach(note => {
+            html += `<div class="employee-note">${note}</div>\n`;
+        });
+        
+        html += `
+<div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
+    <p><strong>Berechnungsregeln (Variante 2 - Streng):</strong></p>
+    <ul>
+        <li><strong>WE-Tage:</strong> Freitag, Samstag, Sonntag, Feiertage und Tage vor Feiertagen</li>
+        <li><strong>Schwelle:</strong> Mindestens 2,0 WE-Einheiten für Bonuszahlung erforderlich</li>
+        <li><strong>Vergütung bei Erreichen der Schwelle:</strong>
+            <ul>
+                <li>Werktage (WT): 250 € pro Einheit</li>
+                <li>WE-Tage: 450 € pro Einheit (abzüglich 1,0 Einheit Abzug, Freitag zuerst)</li>
+            </ul>
+        </li>
+        <li><strong>Unter Schwelle:</strong> Keine Bonuszahlung (weder WT noch WE)</li>
+    </ul>
+</div>
+
+<p style="margin-top: 30px; color: #666; font-size: 0.9em;">
+    Erstellt am: ${new Date().toLocaleDateString('de-DE')} | Dienstplan NRW (Variante 2 - Streng)
+</p>
+
+</body>
+</html>`;
+        
+        // Open in new window
+        const reportWindow = window.open('', '_blank');
+        if (reportWindow) {
+            reportWindow.document.write(html);
+            reportWindow.document.close();
+        } else {
+            alert('Popup wurde blockiert. Bitte erlauben Sie Popups für diese Seite.');
+        }
     }
 
     importData(input) {
