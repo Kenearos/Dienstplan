@@ -53,11 +53,11 @@ Die ältere Implementierung nutzt eine andere Logik:
    - **WE-Tag** (Weekend): Fr-So + Feiertag + Vortag Feiertag
 
 2. **Bonusberechnung**:
-   - **WT-Tage** werden **immer** mit 250€ vergütet
+   - **WT-Tage** werden bei Erreichen der Schwelle mit 250€ vergütet
    - **WE-Tage** nur vergütet wenn ≥ 2.0 WE-Einheiten:
      - Bei Erreichen: 450€ pro WE-Tag
-     - Dann Abzug von 2.0 WE-Einheiten (Freitag-Priorität)
-     - Unter Schwellenwert: WE-Dienste = 0€ (nicht als WT vergütet)
+     - Dann Abzug von 1.0 WE-Einheit (Freitag-Priorität)
+     - Unter Schwellenwert: Keine Bonuszahlung (weder WE noch WT)
 
 ### Wichtiger Unterschied - Beispiel
 
@@ -179,13 +179,13 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 - 2 × Montag (2.0)
 - 2 × Samstag (2.0)
 - Erwartung:
-  - 2.0 qualifizierende → -2.0 Abzug → 0.0 bezahlt
-  - Bonus: (2 × 250€) + (0 × 450€) = **500€**
+  - 2.0 qualifizierende → -1.0 Abzug → 1.0 bezahlt
+  - Bonus: (2 × 250€) + (1 × 450€) = **950€**
 
 ### Testfall 4: Feiertag + Vortag
 - 1 × Donnerstag vor Karfreitag (qualifizierend!)
 - 1 × Karfreitag (Feiertag, qualifizierend!)
-- Erwartung: 2.0 qualifizierende → -2.0 → 0.0 × 450€ = **0€**
+- Erwartung: 2.0 qualifizierende → -1.0 → 1.0 × 450€ = **450€**
 
 ## Häufige Anpassungen
 
@@ -203,17 +203,12 @@ this.RATE_WEEKEND = 500;  // Statt 450
 ```
 
 ### Abzug ändern (Web-App)
-Aktuell ist der Abzug fest auf 2.0 kodiert in `webapp/calculator.js`, Zeile 112:
+Der Abzug ist als Konstante in `webapp/calculator.js` definiert:
 ```javascript
-qualifyingDaysDeducted = 2.0;
+this.DEDUCTION_AMOUNT = 1.0;  // Im Constructor
 ```
 
-Um dies flexibel zu machen, könnte man hinzufügen:
-```javascript
-this.DEDUCTION_AMOUNT = 2.0;  // Im Constructor
-// Dann verwenden:
-qualifyingDaysDeducted = this.DEDUCTION_AMOUNT;
-```
+Um den Abzugswert zu ändern, einfach diesen Wert anpassen.
 
 ## Code-Architektur
 
