@@ -829,7 +829,6 @@ class DienstplanApp {
                         }
                         
                         const isFullyDeducted = thresholdReached && duty.isQual && deductedAmount >= duty.share - 0.0001;
-                        const isPartiallyDeducted = thresholdReached && duty.isQual && deductedAmount > 0 && paidAmount > 0;
                         
                         // Calculate euro amount only for paid portion
                         const rate = duty.isQual ? this.calculator.RATE_WEEKEND : this.calculator.RATE_NORMAL;
