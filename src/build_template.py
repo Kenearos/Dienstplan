@@ -26,6 +26,7 @@ NRW_HOLIDAYS_2025 = [
     ("2025-12-24", "Heiligabend", "NRW"),
     ("2025-12-25", "1. Weihnachtstag", "NRW"),
     ("2025-12-26", "2. Weihnachtstag", "NRW"),
+    ("2025-12-31", "Silvester", "NRW"),
 ]
 
 NRW_HOLIDAYS_2026 = [
@@ -41,6 +42,7 @@ NRW_HOLIDAYS_2026 = [
     ("2026-12-24", "Heiligabend", "NRW"),
     ("2026-12-25", "1. Weihnachtstag", "NRW"),
     ("2026-12-26", "2. Weihnachtstag", "NRW"),
+    ("2026-12-31", "Silvester", "NRW"),
 ]
 
 
