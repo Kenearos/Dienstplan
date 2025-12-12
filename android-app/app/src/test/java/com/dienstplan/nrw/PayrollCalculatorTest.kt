@@ -52,7 +52,7 @@ class PayrollCalculatorTest {
     
     /**
      * Test Case 2: Exactly at threshold (2.0 WE)
-     * Expected: WE payout = 450€ (1.0 unit after deduction), threshold reached
+     * Expected: WE payout = 0€ (0.0 units after 2.0 deduction), threshold reached
      */
     @Test
     fun testExactlyAtThreshold() {
@@ -67,14 +67,14 @@ class PayrollCalculatorTest {
         val result = results[0]
         assertEquals(2.0, result.weTotal, 0.001)
         assertTrue(result.thresholdReached)
-        assertEquals(1.0, result.deductionTotal, 0.001)
-        assertEquals(1.0, result.wePaid, 0.001)
-        assertEquals(450.0, result.payoutWE, 0.001)
+        assertEquals(2.0, result.deductionTotal, 0.001)
+        assertEquals(0.0, result.wePaid, 0.001)
+        assertEquals(0.0, result.payoutWE, 0.001)
     }
     
     /**
      * Test Case 3: Over threshold (3.5 WE)
-     * Expected: WE payout = 1125€ (2.5 units after 1.0 deduction)
+     * Expected: WE payout = 675€ (1.5 units after 2.0 deduction)
      */
     @Test
     fun testOverThreshold() {
@@ -91,8 +91,8 @@ class PayrollCalculatorTest {
         val result = results[0]
         assertEquals(3.5, result.weTotal, 0.001)
         assertTrue(result.thresholdReached)
-        assertEquals(2.5, result.wePaid, 0.001)
-        assertEquals(1125.0, result.payoutWE, 0.001)
+        assertEquals(1.5, result.wePaid, 0.001)
+        assertEquals(675.0, result.payoutWE, 0.001)
     }
     
     /**
@@ -115,9 +115,9 @@ class PayrollCalculatorTest {
         assertEquals(0.4, result.weFriday, 0.001)
         assertEquals(1.6, result.weOther, 0.001)
         assertEquals(0.4, result.deductionFriday, 0.001)  // All Friday deducted first
-        assertEquals(0.6, result.deductionOther, 0.001)   // Rest from other (0.6 to reach 1.0 total)
-        assertEquals(1.0, result.wePaid, 0.001)
-        assertEquals(450.0, result.payoutWE, 0.001)
+        assertEquals(1.6, result.deductionOther, 0.001)   // Rest from other (1.6 to reach 2.0 total)
+        assertEquals(0.0, result.wePaid, 0.001)
+        assertEquals(0.0, result.payoutWE, 0.001)
     }
     
     /**
@@ -145,11 +145,11 @@ class PayrollCalculatorTest {
         assertFalse(resultA.thresholdReached)
         assertEquals(0.0, resultA.payoutWE, 0.001)
         
-        // B: above threshold
+        // B: above threshold (2.5 WE - 2.0 deduction = 0.5 paid)
         assertTrue(resultB.thresholdReached)
         assertEquals(2.5, resultB.weTotal, 0.001)
-        assertEquals(1.5, resultB.wePaid, 0.001)
-        assertEquals(675.0, resultB.payoutWE, 0.001)
+        assertEquals(0.5, resultB.wePaid, 0.001)
+        assertEquals(225.0, resultB.payoutWE, 0.001)
     }
     
     private fun parseDate(dateString: String): Date {

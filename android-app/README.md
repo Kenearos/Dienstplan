@@ -123,7 +123,7 @@ Edit `PayrollCalculator.kt` and modify the constants:
 - `RATE_WT`: Weekday rate (default 250€)
 - `RATE_WE`: Weekend rate (default 450€)
 - `WE_THRESHOLD`: Threshold for WE compensation (default 2.0)
-- `DEDUCTION_AFTER_THRESHOLD`: Deduction amount (default 1.0)
+- `DEDUCTION_AFTER_THRESHOLD`: Deduction amount (default 2.0)
 
 ### Adding Holidays
 

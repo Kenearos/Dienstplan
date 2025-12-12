@@ -24,7 +24,7 @@ class PayrollCalculator {
         private const val RATE_WT = 250.0  // Satz_WT
         private const val RATE_WE = 450.0  // Satz_WE
         private const val WE_THRESHOLD = 2.0  // WE_Schwelle
-        private const val DEDUCTION_AFTER_THRESHOLD = 1.0  // Abzug_nach_WE_Schwelle
+        private const val DEDUCTION_AFTER_THRESHOLD = 2.0  // Abzug_nach_WE_Schwelle
         private const val TOLERANCE = 0.0001  // For floating-point comparisons
     }
     

@@ -21,7 +21,7 @@ Eine Web-Anwendung zur Berechnung von Bonuszahlungen für Wochenend- und Feierta
 
 ### Bonusberechnung
 1. **Schwellenwert**: Mindestens **2.0 qualifizierende Tage** im Monat erforderlich
-2. **Abzug**: Bei Erreichen des Schwellenwerts wird **1.0 qualifizierender Tag** abgezogen (Freitag-Priorität)
+2. **Abzug**: Bei Erreichen des Schwellenwerts werden **2.0 qualifizierende Tage** abgezogen (Freitag-Priorität)
 3. **Vergütung**:
    - Normale Tage: **250€** pro Tag
    - Qualifizierende Tage (WE/Feiertag): **450€** pro Tag
@@ -34,9 +34,9 @@ Mitarbeiter hat im Monat:
 
 **Berechnung**:
 - Qualifizierende Tage: 3.0 (Schwellenwert erreicht ✓)
-- Abzug: -1.0 qualifizierender Tag
-- Bezahlt: 3 normale Tage + 2 qualifizierende Tage
-- **Bonus**: (3 × 250€) + (2 × 450€) = **1.650€**
+- Abzug: -2.0 qualifizierende Tage
+- Bezahlt: 3 normale Tage + 1 qualifizierender Tag
+- **Bonus**: (3 × 250€) + (1 × 450€) = **1.200€**
 
 ## Installation & Nutzung
 
