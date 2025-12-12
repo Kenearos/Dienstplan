@@ -23,8 +23,10 @@ NRW_HOLIDAYS_2025 = [
     ("2025-06-19", "Fronleichnam", "NRW"),
     ("2025-10-03", "Tag der Deutschen Einheit", "NRW"),
     ("2025-11-01", "Allerheiligen", "NRW"),
+    ("2025-12-24", "Heiligabend", "NRW"),
     ("2025-12-25", "1. Weihnachtstag", "NRW"),
     ("2025-12-26", "2. Weihnachtstag", "NRW"),
+    ("2025-12-31", "Silvester", "NRW"),
 ]
 
 NRW_HOLIDAYS_2026 = [
@@ -37,8 +39,10 @@ NRW_HOLIDAYS_2026 = [
     ("2026-06-04", "Fronleichnam", "NRW"),
     ("2026-10-03", "Tag der Deutschen Einheit", "NRW"),
     ("2026-11-01", "Allerheiligen", "NRW"),
+    ("2026-12-24", "Heiligabend", "NRW"),
     ("2026-12-25", "1. Weihnachtstag", "NRW"),
     ("2026-12-26", "2. Weihnachtstag", "NRW"),
+    ("2026-12-31", "Silvester", "NRW"),
 ]
 
 
