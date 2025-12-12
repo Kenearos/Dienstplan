@@ -673,6 +673,14 @@ class DienstplanApp {
             border-radius: 3px;
             font-size: 0.9em;
         }
+        .duty-cell .deducted-tag {
+            background: #fff3cd;
+            color: #856404;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            border: 1px dashed #856404;
+        }
         .employee-note {
             margin: 10px 0;
             padding: 10px;
@@ -735,12 +743,14 @@ class DienstplanApp {
             
             let bonus = 0;
             let deductedFrom = '';
+            let deduct_fr = 0;
+            let deduct_other = 0;
             
             if (thresholdReached) {
                 const wt_pay = data.wt * this.calculator.RATE_NORMAL;
                 let deduct = this.calculator.DEDUCTION_AMOUNT;
-                const deduct_fr = Math.min(deduct, data.we_fr);
-                const deduct_other = Math.max(0, deduct - deduct_fr);
+                deduct_fr = Math.min(deduct, data.we_fr);
+                deduct_other = Math.max(0, deduct - deduct_fr);
                 const paid_fr = Math.max(0, data.we_fr - deduct_fr);
                 const paid_other = Math.max(0, data.we_other - deduct_other);
                 const we_pay = (paid_fr + paid_other) * this.calculator.RATE_WEEKEND;
@@ -777,6 +787,10 @@ class DienstplanApp {
             }
             employeeNotes.push(note);
             
+            // Track remaining deduction for each duty (Friday first, then others)
+            let remainingDeductFr = deduct_fr;
+            let remainingDeductOther = deduct_other;
+            
             // Build table row
             html += `
         <tr>
@@ -794,13 +808,45 @@ class DienstplanApp {
                     dayDuties.forEach(duty => {
                         const dateStr = duty.date.getDate() + '.';
                         const shareStr = duty.share === 0.5 ? '½' : '';
-                        const amountStr = duty.isQual ? `${Math.round(duty.share * this.calculator.RATE_WEEKEND)}€` : `${Math.round(duty.share * this.calculator.RATE_NORMAL)}€`;
-                        const tag = duty.isQual ? 'we-tag' : 'wt-tag';
+                        const isFriday = duty.date.getDay() === 5;
                         const isHoliday = this.holidayProvider.isHoliday(duty.date);
                         const isDayBefore = this.holidayProvider.isDayBeforeHoliday(duty.date);
                         const extraInfo = isHoliday ? ' (Feiertag)' : isDayBefore ? ' (Vor Feiertag)' : '';
                         
-                        cellContent += `<span class="${tag}">${shareStr}X${extraInfo}</span><br><small>${amountStr}</small><br>`;
+                        // Determine if this duty is deducted
+                        let deductedAmount = 0;
+                        let paidAmount = duty.share;
+                        
+                        if (thresholdReached && duty.isQual) {
+                            if (isFriday && remainingDeductFr > 0) {
+                                deductedAmount = Math.min(duty.share, remainingDeductFr);
+                                remainingDeductFr -= deductedAmount;
+                            } else if (!isFriday && remainingDeductOther > 0) {
+                                deductedAmount = Math.min(duty.share, remainingDeductOther);
+                                remainingDeductOther -= deductedAmount;
+                            }
+                            paidAmount = duty.share - deductedAmount;
+                        }
+                        
+                        const isFullyDeducted = thresholdReached && duty.isQual && deductedAmount >= duty.share - 0.0001;
+                        
+                        // Calculate euro amount only for paid portion
+                        const rate = duty.isQual ? this.calculator.RATE_WEEKEND : this.calculator.RATE_NORMAL;
+                        const amountStr = `${Math.round(paidAmount * rate)}€`;
+                        
+                        // Determine tag style
+                        let tag = duty.isQual ? 'we-tag' : 'wt-tag';
+                        if (isFullyDeducted) {
+                            tag = 'deducted-tag';
+                        }
+                        
+                        // Build cell content
+                        cellContent += `<span class="${tag}">${shareStr}X${extraInfo}</span><br>`;
+                        
+                        // Only show euro amount for non-deducted or partially-paid days
+                        if (!isFullyDeducted && (paidAmount > 0 || !duty.isQual)) {
+                            cellContent += `<small>${amountStr}</small><br>`;
+                        }
                     });
                     html += `<td class="duty-cell">${cellContent}</td>`;
                 }
