@@ -108,8 +108,8 @@ class BonusCalculator {
         let totalDeduction = 0;
 
         if (thresholdReached) {
-            // Deduct 1.0 qualifying day with Friday priority
-            totalDeduction = 1.0;
+            // Deduct 2.0 qualifying days with Friday priority
+            totalDeduction = 2.0;
 
             // First deduct from Friday
             deductionFromFriday = Math.min(totalDeduction, qualifyingDaysFriday);

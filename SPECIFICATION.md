@@ -30,7 +30,7 @@ Hinweise:
 - **WE** (WE-Tag):
   - Wenn Monats-Summe WE-Einheiten < 2,0 → Auszahlung 0 € für alle WE-Einheiten.
   - Wenn Monats-Summe WE-Einheiten ≥ 2,0 → Auszahlung 450 €/WE-Einheit,
-    anschließend Abzug genau 1,0 WE-Einheit (max. 1× pro Person/Monat).
+    anschließend Abzug genau 2,0 WE-Einheiten (max. 1× pro Person/Monat).
   - Abzugs-Priorität: zuerst aus Freitag-WE-Einheiten, Rest aus den übrigen WE-Einheiten (Sa/So/Feiertag/Vortag). Chronologie muss nicht nachgebildet werden; es genügt die Priorität nach Kategorie.
 
 ### Splits/Anteile
@@ -51,7 +51,7 @@ Hinweise:
 - Satz_WT = 250
 - Satz_WE = 450
 - WE_Schwelle = 2,0
-- Abzug_nach_WE_Schwelle = 1,0
+- Abzug_nach_WE_Schwelle = 2,0
 - BL_Auswahl = Dropdown (z. B. BW, BY, BE, …)
 - Monat_Auswahl = Datum (erster Tag des Zielmonats, z. B. 01.11.2025)
 - Variante = 2  (fix auf „streng")

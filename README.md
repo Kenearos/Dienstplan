@@ -26,7 +26,7 @@ Native Android-App für mobiles Dienstplan-Management. Siehe [android-app/README
 
 - ✅ Automatische Erkennung von Wochenenden (Fr–So), Feiertagen und Vortagen
 - ✅ Vergütungslogik: WT 250€, WE 450€ (nur ab Schwelle ≥ 2,0 WE-Einheiten)
-- ✅ Abzug 1,0 WE-Einheit (Freitag-Priorität) nach Erreichen der Schwelle
+- ✅ Abzug 2,0 WE-Einheiten (Freitag-Priorität) nach Erreichen der Schwelle
 - ✅ Vorbefüllte Monatsvorlagen mit allen Datumswerten
 - ✅ Excel-kompatibel (ohne Office 365 Funktionen)
 

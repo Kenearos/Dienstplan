@@ -20,7 +20,7 @@ Same as the Python/Excel implementation:
 - **WT-Tag** (Weekday): All other days
 - **WT compensation**: Always 250€ per unit
 - **WE compensation**: Only paid if monthly total ≥ 2.0 WE units
-  - If threshold reached: 450€ per WE unit, then deduct exactly 1.0 WE unit
+  - If threshold reached: 450€ per WE unit, then deduct exactly 2.0 WE units
   - Deduction priority: Friday first, then other WE days
   - Below threshold: 0€ for WE shifts
 
@@ -123,7 +123,7 @@ Edit `PayrollCalculator.kt` and modify the constants:
 - `RATE_WT`: Weekday rate (default 250€)
 - `RATE_WE`: Weekend rate (default 450€)
 - `WE_THRESHOLD`: Threshold for WE compensation (default 2.0)
-- `DEDUCTION_AFTER_THRESHOLD`: Deduction amount (default 1.0)
+- `DEDUCTION_AFTER_THRESHOLD`: Deduction amount (default 2.0)
 
 ### Adding Holidays
 

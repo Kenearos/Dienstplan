@@ -61,7 +61,7 @@ def _populate_readme(ws):
     rules = [
         "WE-Tag = Fr/Sa/So/Feiertag/Vortag (BL-abhängig).",
         "Variante 2 (streng): WE werden nur vergütet, wenn im Monat ≥ 2,0 WE-Einheiten erreicht werden;",
-        "dann 450 €/WE und Abzug 1,0 (Freitag zuerst). WT werden immer mit 250 € vergütet.",
+        "dann 450 €/WE und Abzug 2,0 (Freitag zuerst). WT werden immer mit 250 € vergütet.",
         "Splits anteilig. Monat und Bundesland in 'Regeln' wählen.",
         "",
         "Schritte:",
@@ -83,7 +83,7 @@ def _populate_rules(ws):
         ("Satz_WT", 250, "Euro für jeden Werktagsdienst (Mo–Do, sofern kein WE-Tag)"),
         ("Satz_WE", 450, "Euro für jeden WE-Tag (Fr–So, Feiertag, Vortag Feiertag)"),
         ("WE_Schwelle", 2.0, "Ab dieser WE-Anzahl wird vergütet (sonst 0 €)"),
-        ("Abzug_nach_WE_Schwelle", 1.0, "Einheiten, die nach Erreichen der Schwelle abgezogen werden"),
+        ("Abzug_nach_WE_Schwelle", 2.0, "Einheiten, die nach Erreichen der Schwelle abgezogen werden"),
         ("BL_Auswahl", "NRW", "Bundesland (steuert Feiertage)"),
         ("Monat_Auswahl", date(2025, 11, 1), "Erster Tag des Zielmonats"),
         ("Variante", 2, "Fix: 2 = streng (WE nur bei Schwelle ≥ 2,0)"),
