@@ -284,33 +284,71 @@ def _populate_checks(ws):
 
 
 def build_template():
-    TEMPLATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    wb = Workbook()
+    """Builds the complete Excel template with all sheets and formulas."""
+    try:
+        # Create output directory
+        try:
+            TEMPLATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            print(f"❌ Fehler: Keine Berechtigung zum Erstellen des Verzeichnisses '{TEMPLATE_PATH.parent}'")
+            raise
+        except OSError as e:
+            print(f"❌ Fehler beim Erstellen des Verzeichnisses '{TEMPLATE_PATH.parent}': {e}")
+            raise
 
-    readme_ws = wb.active
-    readme_ws.title = "README"
-    _populate_readme(readme_ws)
+        # Create workbook
+        try:
+            wb = Workbook()
+        except Exception as e:
+            print(f"❌ Fehler beim Erstellen des Workbooks: {e}")
+            raise
 
-    rules_ws = wb.create_sheet("Regeln")
-    _populate_rules(rules_ws)
+        try:
+            readme_ws = wb.active
+            readme_ws.title = "README"
+            _populate_readme(readme_ws)
 
-    holiday_ws = wb.create_sheet("Feiertage")
-    _populate_holidays(holiday_ws)
+            rules_ws = wb.create_sheet("Regeln")
+            _populate_rules(rules_ws)
 
-    plan_ws = wb.create_sheet("Plan")
-    _populate_plan(plan_ws)
+            holiday_ws = wb.create_sheet("Feiertage")
+            _populate_holidays(holiday_ws)
 
-    auswertung_ws = wb.create_sheet("Auswertung")
-    _populate_auswertung(auswertung_ws)
+            plan_ws = wb.create_sheet("Plan")
+            _populate_plan(plan_ws)
 
-    checks_ws = wb.create_sheet("Checks")
-    _populate_checks(checks_ws)
+            auswertung_ws = wb.create_sheet("Auswertung")
+            _populate_auswertung(auswertung_ws)
 
-    wb.save(TEMPLATE_PATH)
-    return TEMPLATE_PATH
+            checks_ws = wb.create_sheet("Checks")
+            _populate_checks(checks_ws)
+        except Exception as e:
+            print(f"❌ Fehler beim Erstellen der Arbeitsblätter: {e}")
+            raise
+
+        # Save template
+        try:
+            wb.save(TEMPLATE_PATH)
+        except PermissionError:
+            print(f"❌ Fehler: Keine Berechtigung zum Speichern der Datei '{TEMPLATE_PATH}'")
+            raise
+        except OSError as e:
+            print(f"❌ Fehler beim Speichern der Datei '{TEMPLATE_PATH}': {e}")
+            raise
+
+        return TEMPLATE_PATH
+
+    except Exception as e:
+        print(f"❌ Unerwarteter Fehler beim Erstellen der Vorlage: {e}")
+        raise
 
 
 if __name__ == "__main__":
-    path = build_template()
-    print(f"✅ Vorlage (Variante 2 – streng) erstellt: {path}")
+    try:
+        path = build_template()
+        print(f"✅ Vorlage (Variante 2 – streng) erstellt: {path}")
+    except Exception:
+        # Error already printed in build_template
+        import sys
+        sys.exit(1)
 
