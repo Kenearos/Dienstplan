@@ -4,6 +4,25 @@
 
 Dieses Projekt berechnet Bonuszahlungen für Mitarbeiter basierend auf Wochenend- und Feiertagsdiensten nach spezifischen NRW-Regeln. Es existieren drei verschiedene Implementierungen für unterschiedliche Anwendungsfälle.
 
+## Quick Start
+
+**Für schnellen Einstieg - Web-App (empfohlen):**
+1. Öffne `webapp/index.html` im Browser
+2. Füge Mitarbeiter hinzu (Tab "Mitarbeiter")
+3. Trage Dienste ein (Tab "Dienste")
+4. Berechne Bonus (Tab "Berechnungen")
+
+**Für Python/Excel:**
+```bash
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+python src/fill_plan_dates.py 2025 12
+```
+
+**Für Android:**
+Siehe `android-app/README.md` für Build-Anleitung.
+
 ## Verfügbare Implementierungen
 
 ### 1. Web-App (empfohlen)
@@ -123,10 +142,28 @@ Alle Implementierungen nutzen die gleichen NRW-Feiertage:
 - Fronleichnam (variabel)
 - Tag der Deutschen Einheit (3. Oktober)
 - Allerheiligen (1. November)
+- Heiligabend (24. Dezember) - *Python/Android 2025-2026*
 - 1. Weihnachtstag (25. Dezember)
 - 2. Weihnachtstag (26. Dezember)
+- Silvester (31. Dezember) - *Python/Android 2025-2026*
 
 **Abdeckung**: 2025-2030 (Web-App), 2025-2026 (Python/Android)
+
+**Hinweis**: Heiligabend und Silvester wurden kürzlich zur Python/Android-Version hinzugefügt, sind aber noch nicht in der Web-App implementiert.
+
+## Letzte Änderungen & Verbesserungen
+
+### Dezember 2025
+- ✅ **Export-Verbesserung**: Abgezogene Tage werden in der Export-Ansicht speziell markiert
+- ✅ **UI-Verbesserung**: Euro-Werte werden für abgezogene Tage ausgeblendet (klarere Darstellung)
+- ✅ **Neue Feiertage**: Heiligabend (24.12.) und Silvester (31.12.) für Python/Android-Version
+- ✅ **Bugfix**: Entfernung ungenutzter `isPartiallyDeducted`-Variable
+- ✅ **Korrektur**: Alle Abzugsreferenzen auf 2.0 (statt 1.0) aktualisiert
+
+### Bekannte Unterschiede zwischen Versionen
+- **Web-App**: Hat Heiligabend/Silvester noch nicht als Feiertage
+- **Python/Android**: Vollständige Feiertage-Liste inklusive Heiligabend/Silvester
+- **Berechnungslogik**: Web-App nutzt vereinfachte Logik (siehe "Berechnungsregeln - Unterschiede")
 
 ## Entwicklungshinweise
 
@@ -313,8 +350,28 @@ Da die App rein client-seitig läuft (keine Server-Logik), ist jeder Static-Host
 
 MIT License - Siehe Hauptprojekt
 
+## Export-Funktion (Web-App)
+
+Die Web-App bietet eine Export-Funktion für Mitarbeiterdaten:
+
+### Features
+- **Export-Format**: JSON-Datei mit allen Mitarbeiter- und Dienstdaten
+- **Import-Funktion**: Wiederherstellen gespeicherter Daten
+- **Verbesserte Darstellung** (v3.1):
+  - Abgezogene Tage werden speziell markiert
+  - Euro-Werte werden für abgezogene Tage ausgeblendet
+  - Klarere Unterscheidung zwischen bezahlten und abgezogenen Diensten
+
+### Verwendung
+1. Im Tab "Mitarbeiter" auf "Export" klicken
+2. JSON-Datei wird heruntergeladen
+3. Zum Importieren: "Import" klicken und Datei auswählen
+
+**Tipp**: Regelmäßige Exports als Backup nutzen, da LocalStorage browser-abhängig ist.
+
 ## Versionshistorie
 
+- **v3.1** (Dezember 2025): Verbesserte Export-Darstellung, Heiligabend/Silvester für Python/Android
 - **v3.0** (2025): Web-App hinzugefügt mit vereinfachter Berechnungslogik
 - **v2.0** (2024): Android-App implementiert
 - **v1.0**: Python/Excel Version (Variante 2 "streng")
