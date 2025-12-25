@@ -4,6 +4,25 @@
 
 Dieses Projekt berechnet Bonuszahlungen für Mitarbeiter basierend auf Wochenend- und Feiertagsdiensten nach spezifischen NRW-Regeln. Es existieren drei verschiedene Implementierungen für unterschiedliche Anwendungsfälle.
 
+## Quick Start
+
+**Für schnellen Einstieg - Web-App (empfohlen):**
+1. Öffne `webapp/index.html` im Browser
+2. Füge Mitarbeiter hinzu (Tab "Mitarbeiter")
+3. Trage Dienste ein (Tab "Dienste")
+4. Berechne Bonus (Tab "Berechnungen")
+
+**Für Python/Excel:**
+```bash
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+python src/fill_plan_dates.py 2025 12
+```
+
+**Für Android:**
+Siehe `android-app/README.md` für Build-Anleitung.
+
 ## Verfügbare Implementierungen
 
 ### 1. Web-App (empfohlen)
@@ -39,7 +58,7 @@ Die Web-App implementiert eine vereinfachte Logik:
 
 2. **Bonusberechnung**:
    - Mindestens **2.0 qualifizierende Tage** erforderlich
-   - Bei Erreichen: **1.0 qualifizierender Tag** wird abgezogen
+   - Bei Erreichen: **2.0 qualifizierende Tage** werden abgezogen
    - **Alle übrigen Tage** werden bezahlt:
      - Normale Tage (Mo-Do, kein Feiertag): 250€
      - Qualifizierende Tage: 450€
@@ -53,11 +72,11 @@ Die ältere Implementierung nutzt eine andere Logik:
    - **WE-Tag** (Weekend): Fr-So + Feiertag + Vortag Feiertag
 
 2. **Bonusberechnung**:
-   - **WT-Tage** werden **immer** mit 250€ vergütet
+   - **WT-Tage** werden bei Erreichen der Schwelle mit 250€ vergütet
    - **WE-Tage** nur vergütet wenn ≥ 2.0 WE-Einheiten:
      - Bei Erreichen: 450€ pro WE-Tag
-     - Dann Abzug von 1.0 WE-Einheit (Freitag-Priorität)
-     - Unter Schwellenwert: WE-Dienste = 0€ (nicht als WT vergütet)
+     - Dann Abzug von 2.0 WE-Einheiten (Freitag-Priorität)
+     - Unter Schwellenwert: Keine Bonuszahlung (weder WE noch WT)
 
 ### Wichtiger Unterschied - Beispiel
 
@@ -123,10 +142,28 @@ Alle Implementierungen nutzen die gleichen NRW-Feiertage:
 - Fronleichnam (variabel)
 - Tag der Deutschen Einheit (3. Oktober)
 - Allerheiligen (1. November)
+- Heiligabend (24. Dezember) - *Python/Android 2025-2026*
 - 1. Weihnachtstag (25. Dezember)
 - 2. Weihnachtstag (26. Dezember)
+- Silvester (31. Dezember) - *Python/Android 2025-2026*
 
 **Abdeckung**: 2025-2030 (Web-App), 2025-2026 (Python/Android)
+
+**Hinweis**: Heiligabend und Silvester wurden kürzlich zur Python/Android-Version hinzugefügt, sind aber noch nicht in der Web-App implementiert.
+
+## Letzte Änderungen & Verbesserungen
+
+### Dezember 2025
+- ✅ **Export-Verbesserung**: Abgezogene Tage werden in der Export-Ansicht speziell markiert
+- ✅ **UI-Verbesserung**: Euro-Werte werden für abgezogene Tage ausgeblendet (klarere Darstellung)
+- ✅ **Neue Feiertage**: Heiligabend (24.12.) und Silvester (31.12.) für Python/Android-Version
+- ✅ **Bugfix**: Entfernung ungenutzter `isPartiallyDeducted`-Variable
+- ✅ **Korrektur**: Alle Abzugsreferenzen auf 2.0 (statt 1.0) aktualisiert
+
+### Bekannte Unterschiede zwischen Versionen
+- **Web-App**: Hat Heiligabend/Silvester noch nicht als Feiertage
+- **Python/Android**: Vollständige Feiertage-Liste inklusive Heiligabend/Silvester
+- **Berechnungslogik**: Web-App nutzt vereinfachte Logik (siehe "Berechnungsregeln - Unterschiede")
 
 ## Entwicklungshinweise
 
@@ -168,7 +205,7 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 ### Testfall 1: Schwellenwert genau erreicht
 - 1 × Freitag (1.0)
 - 1 × Samstag (1.0)
-- Erwartung: 2.0 qualifizierende Tage → 1.0 abgezogen → 1.0 × 450€ = **450€**
+- Erwartung: 2.0 qualifizierende Tage → 2.0 abgezogen → 0.0 × 450€ = **0€**
 
 ### Testfall 2: Schwellenwert nicht erreicht
 - 1 × Samstag (1.0)
@@ -179,13 +216,13 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 - 2 × Montag (2.0)
 - 2 × Samstag (2.0)
 - Erwartung:
-  - 2.0 qualifizierende → -1.0 Abzug → 1.0 bezahlt
-  - Bonus: (2 × 250€) + (1 × 450€) = **950€**
+  - 2.0 qualifizierende → -2.0 Abzug → 0.0 bezahlt
+  - Bonus: (2 × 250€) + (0 × 450€) = **500€**
 
 ### Testfall 4: Feiertag + Vortag
 - 1 × Donnerstag vor Karfreitag (qualifizierend!)
 - 1 × Karfreitag (Feiertag, qualifizierend!)
-- Erwartung: 2.0 qualifizierende → -1.0 → 1.0 × 450€ = **450€**
+- Erwartung: 2.0 qualifizierende → -2.0 → 0.0 × 450€ = **0€**
 
 ## Häufige Anpassungen
 
@@ -203,17 +240,12 @@ this.RATE_WEEKEND = 500;  // Statt 450
 ```
 
 ### Abzug ändern (Web-App)
-Aktuell ist der Abzug fest auf 1.0 kodiert in `webapp/calculator.js`, Zeile 66:
+Der Abzug ist als Konstante in `webapp/calculator.js` definiert:
 ```javascript
-qualifyingDaysDeducted = 1.0;
+this.DEDUCTION_AMOUNT = 2.0;  // Im Constructor
 ```
 
-Um dies flexibel zu machen, könnte man hinzufügen:
-```javascript
-this.DEDUCTION_AMOUNT = 1.0;  // Im Constructor
-// Dann verwenden:
-qualifyingDaysDeducted = this.DEDUCTION_AMOUNT;
-```
+Um den Abzugswert zu ändern, einfach diesen Wert anpassen.
 
 ## Code-Architektur
 
@@ -318,8 +350,28 @@ Da die App rein client-seitig läuft (keine Server-Logik), ist jeder Static-Host
 
 MIT License - Siehe Hauptprojekt
 
+## Export-Funktion (Web-App)
+
+Die Web-App bietet eine Export-Funktion für Mitarbeiterdaten:
+
+### Features
+- **Export-Format**: JSON-Datei mit allen Mitarbeiter- und Dienstdaten
+- **Import-Funktion**: Wiederherstellen gespeicherter Daten
+- **Verbesserte Darstellung** (v3.1):
+  - Abgezogene Tage werden speziell markiert
+  - Euro-Werte werden für abgezogene Tage ausgeblendet
+  - Klarere Unterscheidung zwischen bezahlten und abgezogenen Diensten
+
+### Verwendung
+1. Im Tab "Mitarbeiter" auf "Export" klicken
+2. JSON-Datei wird heruntergeladen
+3. Zum Importieren: "Import" klicken und Datei auswählen
+
+**Tipp**: Regelmäßige Exports als Backup nutzen, da LocalStorage browser-abhängig ist.
+
 ## Versionshistorie
 
+- **v3.1** (Dezember 2025): Verbesserte Export-Darstellung, Heiligabend/Silvester für Python/Android
 - **v3.0** (2025): Web-App hinzugefügt mit vereinfachter Berechnungslogik
 - **v2.0** (2024): Android-App implementiert
 - **v1.0**: Python/Excel Version (Variante 2 "streng")

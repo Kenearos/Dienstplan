@@ -191,7 +191,7 @@ runner.test('Berechnung: Unter Schwellenwert (1.0 WE-Tag) = 0€', (t) => {
     t.assertEqual(result.totalBonus, 0, 'Bonus sollte 0€ sein');
 });
 
-runner.test('Berechnung: Genau 2.0 WE-Tage = 450€', (t) => {
+runner.test('Berechnung: Genau 2.0 WE-Tage = 0€', (t) => {
     const holidays = new HolidayProvider();
     const calculator = new BonusCalculator(holidays);
 
@@ -204,12 +204,12 @@ runner.test('Berechnung: Genau 2.0 WE-Tage = 450€', (t) => {
 
     t.assertEqual(result.qualifyingDays, 2.0, 'Sollte 2.0 qualifizierende Tage haben');
     t.assertTrue(result.thresholdReached, 'Schwellenwert sollte erreicht sein');
-    t.assertEqual(result.qualifyingDaysDeducted, 1.0, 'Sollte 1.0 Tag abziehen');
-    t.assertEqual(result.qualifyingDaysPaid, 1.0, 'Sollte 1.0 Tag bezahlen');
-    t.assertEqual(result.totalBonus, 450, 'Bonus sollte 450€ sein');
+    t.assertEqual(result.qualifyingDaysDeducted, 2.0, 'Sollte 2.0 Tage abziehen');
+    t.assertEqual(result.qualifyingDaysPaid, 0.0, 'Sollte 0.0 Tage bezahlen');
+    t.assertEqual(result.totalBonus, 0, 'Bonus sollte 0€ sein');
 });
 
-runner.test('Berechnung: 2x halbe WE-Dienste = 0€ (genau Schwelle, aber nach Abzug nichts)', (t) => {
+runner.test('Berechnung: 2x halbe WE-Dienste = 0€ (genau Schwelle, nach Abzug 2.0)', (t) => {
     const holidays = new HolidayProvider();
     const calculator = new BonusCalculator(holidays);
 
@@ -224,11 +224,11 @@ runner.test('Berechnung: 2x halbe WE-Dienste = 0€ (genau Schwelle, aber nach A
 
     t.assertEqual(result.qualifyingDays, 2.0, 'Sollte 2.0 qualifizierende Tage haben (4×0.5)');
     t.assertTrue(result.thresholdReached, 'Schwellenwert sollte erreicht sein');
-    t.assertEqual(result.qualifyingDaysPaid, 1.0, 'Sollte 1.0 Tag bezahlen nach Abzug');
-    t.assertEqual(result.totalBonus, 450, 'Bonus sollte 450€ sein');
+    t.assertEqual(result.qualifyingDaysPaid, 0.0, 'Sollte 0.0 Tage bezahlen nach Abzug');
+    t.assertEqual(result.totalBonus, 0, 'Bonus sollte 0€ sein');
 });
 
-runner.test('Berechnung: 3 WE-Tage = 900€', (t) => {
+runner.test('Berechnung: 3 WE-Tage = 450€', (t) => {
     const holidays = new HolidayProvider();
     const calculator = new BonusCalculator(holidays);
 
@@ -241,8 +241,8 @@ runner.test('Berechnung: 3 WE-Tage = 900€', (t) => {
     const result = calculator.calculateMonthlyBonus(duties);
 
     t.assertEqual(result.qualifyingDays, 3.0, 'Sollte 3.0 qualifizierende Tage haben');
-    t.assertEqual(result.qualifyingDaysPaid, 2.0, 'Sollte 2.0 Tage bezahlen (3-1)');
-    t.assertEqual(result.totalBonus, 900, 'Bonus sollte 900€ sein (2×450€)');
+    t.assertEqual(result.qualifyingDaysPaid, 1.0, 'Sollte 1.0 Tage bezahlen (3-2)');
+    t.assertEqual(result.totalBonus, 450, 'Bonus sollte 450€ sein (1×450€)');
 });
 
 runner.test('Berechnung: Normale Tage + WE-Tage gemischt', (t) => {
@@ -261,10 +261,10 @@ runner.test('Berechnung: Normale Tage + WE-Tage gemischt', (t) => {
     t.assertEqual(result.normalDays, 2.0, 'Sollte 2.0 normale Tage haben');
     t.assertEqual(result.qualifyingDays, 2.0, 'Sollte 2.0 qualifizierende Tage haben');
     t.assertEqual(result.normalDaysPaid, 2.0, 'Sollte 2.0 normale Tage bezahlen');
-    t.assertEqual(result.qualifyingDaysPaid, 1.0, 'Sollte 1.0 qualifizierenden Tag bezahlen');
+    t.assertEqual(result.qualifyingDaysPaid, 0.0, 'Sollte 0.0 qualifizierende Tage bezahlen');
     t.assertEqual(result.bonusNormalDays, 500, 'Normale Tage: 2×250€ = 500€');
-    t.assertEqual(result.bonusQualifyingDays, 450, 'WE-Tage: 1×450€ = 450€');
-    t.assertEqual(result.totalBonus, 950, 'Gesamt: 950€');
+    t.assertEqual(result.bonusQualifyingDays, 0, 'WE-Tage: 0×450€ = 0€');
+    t.assertEqual(result.totalBonus, 500, 'Gesamt: 500€');
 });
 
 runner.test('Berechnung: Halbe Dienste korrekt berechnet', (t) => {
@@ -282,10 +282,10 @@ runner.test('Berechnung: Halbe Dienste korrekt berechnet', (t) => {
 
     t.assertEqual(result.normalDays, 0.5, 'Sollte 0.5 normale Tage haben');
     t.assertEqual(result.qualifyingDays, 2.5, 'Sollte 2.5 qualifizierende Tage haben');
-    t.assertEqual(result.qualifyingDaysPaid, 1.5, 'Sollte 1.5 qualifizierende Tage bezahlen');
+    t.assertEqual(result.qualifyingDaysPaid, 0.5, 'Sollte 0.5 qualifizierende Tage bezahlen');
     t.assertEqual(result.bonusNormalDays, 125, 'Normale Tage: 0.5×250€ = 125€');
-    t.assertEqual(result.bonusQualifyingDays, 675, 'WE-Tage: 1.5×450€ = 675€');
-    t.assertEqual(result.totalBonus, 800, 'Gesamt: 800€');
+    t.assertEqual(result.bonusQualifyingDays, 225, 'WE-Tage: 0.5×450€ = 225€');
+    t.assertEqual(result.totalBonus, 350, 'Gesamt: 350€');
 });
 
 runner.test('Berechnung: Feiertag + Vortag', (t) => {
@@ -301,7 +301,7 @@ runner.test('Berechnung: Feiertag + Vortag', (t) => {
 
     t.assertEqual(result.qualifyingDays, 2.0, 'Sollte 2.0 qualifizierende Tage haben');
     t.assertTrue(result.thresholdReached, 'Schwellenwert sollte erreicht sein');
-    t.assertEqual(result.totalBonus, 450, 'Bonus sollte 450€ sein');
+    t.assertEqual(result.totalBonus, 0, 'Bonus sollte 0€ sein (2.0 - 2.0 = 0.0 × 450€)');
 });
 
 runner.test('Berechnung: Keine Dienste = 0€', (t) => {

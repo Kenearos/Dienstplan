@@ -13,8 +13,21 @@ class DataStorage {
      * @returns {Array} Array of employee names
      */
     getEmployees() {
-        const data = localStorage.getItem(this.STORAGE_KEY_EMPLOYEES);
-        return data ? JSON.parse(data) : [];
+        try {
+            const data = localStorage.getItem(this.STORAGE_KEY_EMPLOYEES);
+            if (!data) {
+                return [];
+            }
+            const parsed = JSON.parse(data);
+            if (!Array.isArray(parsed)) {
+                console.error('Fehler: Mitarbeiter-Daten sind kein Array. Zurücksetzen auf leeres Array');
+                return [];
+            }
+            return parsed;
+        } catch (e) {
+            console.error('Fehler beim Laden der Mitarbeiter-Daten:', e);
+            return [];
+        }
     }
 
     /**
@@ -22,7 +35,16 @@ class DataStorage {
      * @param {Array} employees - Array of employee names
      */
     saveEmployees(employees) {
-        localStorage.setItem(this.STORAGE_KEY_EMPLOYEES, JSON.stringify(employees));
+        try {
+            if (!Array.isArray(employees)) {
+                console.error('Fehler: employees muss ein Array sein');
+                throw new TypeError('employees muss ein Array sein');
+            }
+            localStorage.setItem(this.STORAGE_KEY_EMPLOYEES, JSON.stringify(employees));
+        } catch (e) {
+            console.error('Fehler beim Speichern der Mitarbeiter-Daten:', e);
+            throw e;
+        }
     }
 
     /**
@@ -63,8 +85,21 @@ class DataStorage {
      * @returns {Object} Object with structure: {employeeName: {year-month: [duties]}}
      */
     getAllDuties() {
-        const data = localStorage.getItem(this.STORAGE_KEY_DUTIES);
-        return data ? JSON.parse(data) : {};
+        try {
+            const data = localStorage.getItem(this.STORAGE_KEY_DUTIES);
+            if (!data) {
+                return {};
+            }
+            const parsed = JSON.parse(data);
+            if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+                console.error('Fehler: Dienst-Daten sind kein gültiges Objekt. Zurücksetzen auf leeres Objekt');
+                return {};
+            }
+            return parsed;
+        } catch (e) {
+            console.error('Fehler beim Laden der Dienst-Daten:', e);
+            return {};
+        }
     }
 
     /**
@@ -72,7 +107,16 @@ class DataStorage {
      * @param {Object} duties
      */
     saveAllDuties(duties) {
-        localStorage.setItem(this.STORAGE_KEY_DUTIES, JSON.stringify(duties));
+        try {
+            if (typeof duties !== 'object' || duties === null || Array.isArray(duties)) {
+                console.error('Fehler: duties muss ein gültiges Objekt sein');
+                throw new TypeError('duties muss ein gültiges Objekt sein');
+            }
+            localStorage.setItem(this.STORAGE_KEY_DUTIES, JSON.stringify(duties));
+        } catch (e) {
+            console.error('Fehler beim Speichern der Dienst-Daten:', e);
+            throw e;
+        }
     }
 
     /**
@@ -83,18 +127,35 @@ class DataStorage {
      * @returns {Array} Array of duty objects
      */
     getDutiesForMonth(employeeName, year, month) {
-        const allDuties = this.getAllDuties();
-        const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+        try {
+            const allDuties = this.getAllDuties();
+            const monthKey = `${year}-${String(month).padStart(2, '0')}`;
 
-        if (!allDuties[employeeName] || !allDuties[employeeName][monthKey]) {
+            if (!allDuties[employeeName] || !allDuties[employeeName][monthKey]) {
+                return [];
+            }
+
+            // Convert date strings back to Date objects
+            return allDuties[employeeName][monthKey].map(duty => {
+                try {
+                    const dateObj = new Date(duty.date);
+                    if (isNaN(dateObj.getTime())) {
+                        console.error(`Fehler: Ungültiges Datum für Dienst: ${duty.date}`);
+                        return null;
+                    }
+                    return {
+                        ...duty,
+                        date: dateObj
+                    };
+                } catch (e) {
+                    console.error('Fehler beim Konvertieren des Datums:', e);
+                    return null;
+                }
+            }).filter(duty => duty !== null); // Filter out invalid entries
+        } catch (e) {
+            console.error('Fehler beim Laden der Dienste für Monat:', e);
             return [];
         }
-
-        // Convert date strings back to Date objects
-        return allDuties[employeeName][monthKey].map(duty => ({
-            ...duty,
-            date: new Date(duty.date)
-        }));
     }
 
     /**
@@ -105,20 +166,36 @@ class DataStorage {
      * @param {Array} duties - Array of duty objects
      */
     saveDutiesForMonth(employeeName, year, month, duties) {
-        const allDuties = this.getAllDuties();
-        const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+        try {
+            if (!Array.isArray(duties)) {
+                console.error('Fehler: duties muss ein Array sein');
+                throw new TypeError('duties muss ein Array sein');
+            }
 
-        if (!allDuties[employeeName]) {
-            allDuties[employeeName] = {};
+            const allDuties = this.getAllDuties();
+            const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+
+            if (!allDuties[employeeName]) {
+                allDuties[employeeName] = {};
+            }
+
+            // Convert Date objects to strings for storage
+            allDuties[employeeName][monthKey] = duties.map(duty => {
+                if (!duty.date || !(duty.date instanceof Date)) {
+                    console.error('Fehler: Dienst hat kein gültiges Datum:', duty);
+                    throw new TypeError('Dienst muss ein gültiges Date-Objekt haben');
+                }
+                return {
+                    ...duty,
+                    date: duty.date.toISOString()
+                };
+            });
+
+            this.saveAllDuties(allDuties);
+        } catch (e) {
+            console.error('Fehler beim Speichern der Dienste für Monat:', e);
+            throw e;
         }
-
-        // Convert Date objects to strings for storage
-        allDuties[employeeName][monthKey] = duties.map(duty => ({
-            ...duty,
-            date: duty.date.toISOString()
-        }));
-
-        this.saveAllDuties(allDuties);
     }
 
     /**
@@ -196,10 +273,15 @@ class DataStorage {
      * @returns {string} JSON string
      */
     exportData() {
-        return JSON.stringify({
-            employees: this.getEmployees(),
-            duties: this.getAllDuties()
-        }, null, 2);
+        try {
+            return JSON.stringify({
+                employees: this.getEmployees(),
+                duties: this.getAllDuties()
+            }, null, 2);
+        } catch (e) {
+            console.error('Fehler beim Exportieren der Daten:', e);
+            throw new Error('Fehler beim Exportieren der Daten: ' + e.message);
+        }
     }
 
     /**

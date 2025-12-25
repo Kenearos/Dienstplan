@@ -23,8 +23,10 @@ NRW_HOLIDAYS_2025 = [
     ("2025-06-19", "Fronleichnam", "NRW"),
     ("2025-10-03", "Tag der Deutschen Einheit", "NRW"),
     ("2025-11-01", "Allerheiligen", "NRW"),
+    ("2025-12-24", "Heiligabend", "NRW"),
     ("2025-12-25", "1. Weihnachtstag", "NRW"),
     ("2025-12-26", "2. Weihnachtstag", "NRW"),
+    ("2025-12-31", "Silvester", "NRW"),
 ]
 
 NRW_HOLIDAYS_2026 = [
@@ -37,8 +39,10 @@ NRW_HOLIDAYS_2026 = [
     ("2026-06-04", "Fronleichnam", "NRW"),
     ("2026-10-03", "Tag der Deutschen Einheit", "NRW"),
     ("2026-11-01", "Allerheiligen", "NRW"),
+    ("2026-12-24", "Heiligabend", "NRW"),
     ("2026-12-25", "1. Weihnachtstag", "NRW"),
     ("2026-12-26", "2. Weihnachtstag", "NRW"),
+    ("2026-12-31", "Silvester", "NRW"),
 ]
 
 
@@ -61,7 +65,7 @@ def _populate_readme(ws):
     rules = [
         "WE-Tag = Fr/Sa/So/Feiertag/Vortag (BL-abhängig).",
         "Variante 2 (streng): WE werden nur vergütet, wenn im Monat ≥ 2,0 WE-Einheiten erreicht werden;",
-        "dann 450 €/WE und Abzug 1,0 (Freitag zuerst). WT werden immer mit 250 € vergütet.",
+        "dann 450 €/WE und Abzug 2,0 (Freitag zuerst). WT werden bei Erreichen der WE-Schwelle mit 250 € vergütet.",
         "Splits anteilig. Monat und Bundesland in 'Regeln' wählen.",
         "",
         "Schritte:",
@@ -83,7 +87,7 @@ def _populate_rules(ws):
         ("Satz_WT", 250, "Euro für jeden Werktagsdienst (Mo–Do, sofern kein WE-Tag)"),
         ("Satz_WE", 450, "Euro für jeden WE-Tag (Fr–So, Feiertag, Vortag Feiertag)"),
         ("WE_Schwelle", 2.0, "Ab dieser WE-Anzahl wird vergütet (sonst 0 €)"),
-        ("Abzug_nach_WE_Schwelle", 1.0, "Einheiten, die nach Erreichen der Schwelle abgezogen werden"),
+        ("Abzug_nach_WE_Schwelle", 2.0, "Einheiten, die nach Erreichen der Schwelle abgezogen werden"),
         ("BL_Auswahl", "NRW", "Bundesland (steuert Feiertage)"),
         ("Monat_Auswahl", date(2025, 11, 1), "Erster Tag des Zielmonats"),
         ("Variante", 2, "Fix: 2 = streng (WE nur bei Schwelle ≥ 2,0)"),
@@ -280,33 +284,71 @@ def _populate_checks(ws):
 
 
 def build_template():
-    TEMPLATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    wb = Workbook()
+    """Builds the complete Excel template with all sheets and formulas."""
+    try:
+        # Create output directory
+        try:
+            TEMPLATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            print(f"❌ Fehler: Keine Berechtigung zum Erstellen des Verzeichnisses '{TEMPLATE_PATH.parent}'")
+            raise
+        except OSError as e:
+            print(f"❌ Fehler beim Erstellen des Verzeichnisses '{TEMPLATE_PATH.parent}': {e}")
+            raise
 
-    readme_ws = wb.active
-    readme_ws.title = "README"
-    _populate_readme(readme_ws)
+        # Create workbook
+        try:
+            wb = Workbook()
+        except Exception as e:
+            print(f"❌ Fehler beim Erstellen des Workbooks: {e}")
+            raise
 
-    rules_ws = wb.create_sheet("Regeln")
-    _populate_rules(rules_ws)
+        try:
+            readme_ws = wb.active
+            readme_ws.title = "README"
+            _populate_readme(readme_ws)
 
-    holiday_ws = wb.create_sheet("Feiertage")
-    _populate_holidays(holiday_ws)
+            rules_ws = wb.create_sheet("Regeln")
+            _populate_rules(rules_ws)
 
-    plan_ws = wb.create_sheet("Plan")
-    _populate_plan(plan_ws)
+            holiday_ws = wb.create_sheet("Feiertage")
+            _populate_holidays(holiday_ws)
 
-    auswertung_ws = wb.create_sheet("Auswertung")
-    _populate_auswertung(auswertung_ws)
+            plan_ws = wb.create_sheet("Plan")
+            _populate_plan(plan_ws)
 
-    checks_ws = wb.create_sheet("Checks")
-    _populate_checks(checks_ws)
+            auswertung_ws = wb.create_sheet("Auswertung")
+            _populate_auswertung(auswertung_ws)
 
-    wb.save(TEMPLATE_PATH)
-    return TEMPLATE_PATH
+            checks_ws = wb.create_sheet("Checks")
+            _populate_checks(checks_ws)
+        except Exception as e:
+            print(f"❌ Fehler beim Erstellen der Arbeitsblätter: {e}")
+            raise
+
+        # Save template
+        try:
+            wb.save(TEMPLATE_PATH)
+        except PermissionError:
+            print(f"❌ Fehler: Keine Berechtigung zum Speichern der Datei '{TEMPLATE_PATH}'")
+            raise
+        except OSError as e:
+            print(f"❌ Fehler beim Speichern der Datei '{TEMPLATE_PATH}': {e}")
+            raise
+
+        return TEMPLATE_PATH
+
+    except Exception as e:
+        print(f"❌ Unerwarteter Fehler beim Erstellen der Vorlage: {e}")
+        raise
 
 
 if __name__ == "__main__":
-    path = build_template()
-    print(f"✅ Vorlage (Variante 2 – streng) erstellt: {path}")
+    try:
+        path = build_template()
+        print(f"✅ Vorlage (Variante 2 – streng) erstellt: {path}")
+    except Exception:
+        # Error already printed in build_template
+        import sys
+        sys.exit(1)
 

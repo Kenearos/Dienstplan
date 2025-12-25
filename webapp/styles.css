@@ -188,6 +188,18 @@ header h1 {
     background: #5a6268;
 }
 
+.btn-success {
+    background: #28a745;
+    color: white;
+    margin-right: 10px;
+}
+
+.btn-success:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+}
+
 .btn-danger {
     background: #dc3545;
     color: white;

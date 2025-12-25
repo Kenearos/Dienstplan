@@ -8,6 +8,7 @@ class BonusCalculator {
         this.RATE_NORMAL = 250;  // Normal day rate (not weekend/holiday)
         this.RATE_WEEKEND = 450; // Weekend/holiday rate
         this.MIN_QUALIFYING_DAYS = 2.0; // Minimum qualifying days to trigger bonus
+        this.DEDUCTION_AMOUNT = 2.0; // Deduction after reaching threshold
     }
 
     /**
@@ -108,8 +109,8 @@ class BonusCalculator {
         let totalDeduction = 0;
 
         if (thresholdReached) {
-            // Deduct 1.0 qualifying day with Friday priority
-            totalDeduction = 1.0;
+            // Deduct qualifying days with Friday priority
+            totalDeduction = this.DEDUCTION_AMOUNT;
 
             // First deduct from Friday
             deductionFromFriday = Math.min(totalDeduction, qualifyingDaysFriday);

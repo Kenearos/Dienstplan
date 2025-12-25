@@ -4,7 +4,7 @@ Stand: 14.11.2025 (Deutschland)
 
 ## Ziel
 
-Diese README beschreibt vollständig, wie eine Excel-Arbeitsmappe aufgebaut wird, die Monatsdienste erfasst und automatisch die Vergütung ermittelt – inkl. Erkennung von Wochenend-/Feiertagsdiensten (inkl. Vortag), Schwellenlogik und Abzug 1,0 WE-Einheit. Variante 2 (streng) ist aktiv: WE-Dienste werden nur vergütet, wenn im Monat mindestens 2,0 WE-Einheiten erreicht werden; sonst 0 €. Wochentage (kein WE) werden stets vergütet.
+Diese README beschreibt vollständig, wie eine Excel-Arbeitsmappe aufgebaut wird, die Monatsdienste erfasst und automatisch die Vergütung ermittelt – inkl. Erkennung von Wochenend-/Feiertagsdiensten (inkl. Vortag), Schwellenlogik und Abzug 2,0 WE-Einheiten nach Erreichen der Schwelle. Variante 2 (streng) ist aktiv: WE-Dienste werden nur vergütet, wenn im Monat mindestens 2,0 WE-Einheiten erreicht werden; sonst 0 €. Wochentage (kein WE) werden ebenfalls nur bei Erreichen der WE-Schwelle vergütet.
 
 Hinweise:
 - Region: Deutschland, Bundesland wählbar (steuert Feiertage).
@@ -30,7 +30,7 @@ Hinweise:
 - **WE** (WE-Tag):
   - Wenn Monats-Summe WE-Einheiten < 2,0 → Auszahlung 0 € für alle WE-Einheiten.
   - Wenn Monats-Summe WE-Einheiten ≥ 2,0 → Auszahlung 450 €/WE-Einheit,
-    anschließend Abzug genau 1,0 WE-Einheit (max. 1× pro Person/Monat).
+    anschließend Abzug genau 2,0 WE-Einheiten (max. 1× pro Person/Monat).
   - Abzugs-Priorität: zuerst aus Freitag-WE-Einheiten, Rest aus den übrigen WE-Einheiten (Sa/So/Feiertag/Vortag). Chronologie muss nicht nachgebildet werden; es genügt die Priorität nach Kategorie.
 
 ### Splits/Anteile
@@ -51,7 +51,7 @@ Hinweise:
 - Satz_WT = 250
 - Satz_WE = 450
 - WE_Schwelle = 2,0
-- Abzug_nach_WE_Schwelle = 1,0
+- Abzug_nach_WE_Schwelle = 2,0
 - BL_Auswahl = Dropdown (z. B. BW, BY, BE, …)
 - Monat_Auswahl = Datum (erster Tag des Zielmonats, z. B. 01.11.2025)
 - Variante = 2  (fix auf „streng")
@@ -279,17 +279,17 @@ Beispiel-Formel (als hilfsweise Matrix in Checks):
    A hat 1,75 WE und 1,0 WT → Auszahlung_WE = 0 €; Auszahlung_WT = 0 €; Auszahlung_Gesamt = 0 €.
 
 2) **Genau Schwelle**:  
-   A hat 2,0 WE (Fr 1,0 + Sa 1,0) → Abzug 1,0 (zuerst Fr) → WE_bezahlt = 1,0 → 450 €.
+   A hat 2,0 WE (Fr 1,0 + Sa 1,0) → Abzug 2,0 (zuerst Fr) → WE_bezahlt = 0,0 → 0 €.
 
 3) **Über Schwelle ohne Freitag**:  
-   A hat 2,0 WE (nur Sa+So) → Abzug 1,0 aus „Andere" → WE_bezahlt = 1,0 → 450 €.
+   A hat 2,0 WE (nur Sa+So) → Abzug 2,0 aus „Andere" → WE_bezahlt = 0,0 → 0 €.
 
 4) **Starke Überdeckung**:  
-   A hat 3,5 WE → Abzug 1,0 → WE_bezahlt = 2,5 → 2,5×450 €.
+   A hat 3,5 WE → Abzug 2,0 → WE_bezahlt = 1,5 → 1,5×450 € = 675 €.
 
 5) **Splits rund um 2,0**:  
-   A hat Fr 0,4 + Sa 0,6 + So 1,0 → Summe 2,0 → Abzug 1,0  
-   (0,4 von Fr, 0,6 von Andere) → WE_bezahlt = 1,0 → 450 €.
+   A hat Fr 0,4 + Sa 0,6 + So 1,0 → Summe 2,0 → Abzug 2,0  
+   (0,4 von Fr, 1,6 von Andere) → WE_bezahlt = 0,0 → 0 €.
 
 6) **Unter Schwelle, nur WE-Tage**:  
    A hat 1,0 WE, 0 WT → Auszahlung_WE = 0 €; Auszahlung_Gesamt = 0 €.
@@ -300,9 +300,9 @@ Beispiel-Formel (als hilfsweise Matrix in Checks):
 
 ## Edge-Cases und Präzisierungen
 
-- Abzug nur einmal pro Person/Monat (fix 1,0), und nur wenn Schwelle erreicht.
+- Abzug nur einmal pro Person/Monat (fix 2,0), und nur wenn Schwelle erreicht.
 - Der Vortag eines Feiertags ist WE-Tag – unabhängig davon, welcher Wochentag er ist.
-- Wenn WE_Freitag < 1,0, wird der restliche Abzug (bis 1,0) von WE_Andere genommen.
+- Wenn WE_Freitag < 2,0, wird der restliche Abzug (bis 2,0) von WE_Andere genommen.
 - Monatswechsel: Daten genau per >=Monat_Auswahl und <=EOMONAT(Monat_Auswahl;0) filtern.
 - Rundungstoleranz 1e-4 bei Schwelle und Datumssummen (Splits wie 0,33/0,67).
 - Tabellen-Namen („tblPlan", „tblFeiertage", „tblAuswertung") konsequent verwenden.
@@ -324,11 +324,11 @@ Lieferumfang (empfohlen):
 - 18.11.2025: Korrektur Variante 2: **Gesamter Bonus (WT + WE) wird nur gezahlt, wenn WE_Summe ≥ 2,0**.
   Unter Schwelle: Auszahlung_Gesamt = 0 € (weder WT noch WE).
 - 14.11.2025: Umstellung auf Variante 2 (streng). WE-Vergütung nur bei WE_Summe ≥ 2,0,
-  anschließend Abzug 1,0 (Freitag zuerst). Unterhalb der Schwelle: WE-Auszahlung = 0 €.
+  anschließend Abzug 2,0 (Freitag zuerst). Unterhalb der Schwelle: WE-Auszahlung = 0 €.
 - 13.11.2025: Vorversion (Variante 1) mit WE-Auszahlung ab erstem WE-Dienst und Abzug nach Schwelle (ersetzt).
 
 ## Kurztext (für Blatt „Regeln" als Readme-Hinweis)
 
-„WE-Tag = Fr/Sa/So/Feiertag/Vortag (BL-abhängig). Variante 2 (streng): Gesamter Bonus (WT + WE) wird nur gezahlt, wenn im Monat ≥ 2,0 WE-Einheiten erreicht werden. Bei Erreichen der Schwelle: WT 250 €/Einheit, WE 450 €/Einheit mit Abzug 1,0 (Freitag zuerst). Unter Schwelle: 0 € Auszahlung. Splits anteilig. Monat und Bundesland oben wählen."
+„WE-Tag = Fr/Sa/So/Feiertag/Vortag (BL-abhängig). Variante 2 (streng): Gesamter Bonus (WT + WE) wird nur gezahlt, wenn im Monat ≥ 2,0 WE-Einheiten erreicht werden. Bei Erreichen der Schwelle: WT 250 €/Einheit, WE 450 €/Einheit mit Abzug 2,0 (Freitag zuerst). Unter Schwelle: 0 € Auszahlung. Splits anteilig. Monat und Bundesland oben wählen."
 
 — Ende der README —
