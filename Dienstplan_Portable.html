@@ -374,6 +374,13 @@
         <div style="opacity: 0.8; font-size: 0.9rem;">Variante 2 (Streng) - Kalender Edition</div>
     </header>
 
+                <div class="form-group">
+                    <label for="employeeName">Mitarbeiter hinzufügen</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="employeeName" placeholder="Name eingeben..." style="flex: 1;">
+                        <button class="btn btn-primary" onclick="addEmployee()">Hinzufügen</button>
+                    </div>
+                </div>
     <div class="controls">
         <div class="month-selector">
             <select id="selectMonth" onchange="app.changeMonth()"></select>
@@ -1056,6 +1063,42 @@ class DienstplanApp {
                 const we_pay = (paid_fr + paid_other) * CONFIG.RATE_WE;
                 payout = wt_pay + we_pay;
             }
+
+            monthDuties.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            container.innerHTML = monthDuties.map((duty, idx) => {
+                const date = new Date(duty.date);
+                const qualifying = isQualifyingDay(date);
+                const dayType = getDayTypeLabel(date);
+                const realIndex = duties.indexOf(duty);
+
+                return `
+                    <div class="duty-item ${qualifying ? 'qualifying' : ''}">
+                        <div>
+                            <strong>${duty.employee}</strong>
+                        </div>
+                        <div>
+                            ${date.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' })}
+                            <div class="day-type">${dayType}</div>
+                        </div>
+                        <div>Anteil: ${formatNumber(duty.share)}</div>
+                        <div>
+                            <button class="btn btn-danger" onclick="removeDuty(${realIndex})">Löschen</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function calculateAndShowResults() {
+            const monthDuties = duties.filter(d => {
+                const date = new Date(d.date);
+                return date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+            });
+
+            if (monthDuties.length === 0) {
+                alert('Keine Dienste für diesen Monat eingetragen.');
+                return;
             
             totalPayout += payout;
             
@@ -1161,6 +1204,17 @@ class DienstplanApp {
             border-bottom: 2px solid #4472C4;
             padding-bottom: 10px;
         }
+
+        // ==================== STORAGE ====================
+        function saveToStorage() {
+            try {
+                localStorage.setItem('dienstplan_portable_employees', JSON.stringify(employees));
+                localStorage.setItem('dienstplan_portable_duties', JSON.stringify(duties));
+                localStorage.setItem('dienstplan_portable_month', selectedMonth);
+                localStorage.setItem('dienstplan_portable_year', selectedYear);
+            } catch (e) {
+                console.log('Speichern nicht möglich:', e);
+            }
         h5 {
             color: #666;
             margin-bottom: 20px;
@@ -1404,6 +1458,17 @@ class DienstplanApp {
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
+                const savedEmployees = localStorage.getItem('dienstplan_portable_employees');
+                const savedDuties = localStorage.getItem('dienstplan_portable_duties');
+                const savedMonth = localStorage.getItem('dienstplan_portable_month');
+                const savedYear = localStorage.getItem('dienstplan_portable_year');
+
+                if (savedEmployees) employees = JSON.parse(savedEmployees);
+                if (savedDuties) duties = JSON.parse(savedDuties);
+                if (savedMonth !== null) selectedMonth = parseInt(savedMonth);
+                if (savedYear !== null) selectedYear = parseInt(savedYear);
+            } catch (e) {
+                console.log('Laden nicht möglich:', e);
                 const data = JSON.parse(e.target.result);
 
                 // Support both old format (array) and new format (object with version)
