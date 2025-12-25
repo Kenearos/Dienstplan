@@ -20,25 +20,39 @@ ABZUG = 2.0  # Abzug nach Erreichen der Schwelle
 def load_holidays(wb):
     """Lädt Feiertage aus dem Feiertage-Blatt."""
     if "Feiertage" not in wb.sheetnames:
+        print("⚠️ Warnung: Blatt 'Feiertage' nicht gefunden. Keine Feiertage geladen")
         return set()
-    
+
     holidays = set()
-    ws = wb["Feiertage"]
-    
-    for row in ws.iter_rows(min_row=2, values_only=True):
-        if row[0] and row[2] == "NRW":  # Datum und BL prüfen
-            date_raw = row[0]
-            if isinstance(date_raw, str):
-                try:
-                    parsed_date = datetime.strptime(date_raw, '%d.%m.%Y').date()
-                    holidays.add(parsed_date)
-                except:
-                    pass
-            elif isinstance(date_raw, datetime):
-                holidays.add(date_raw.date())
-            elif isinstance(date_raw, date):
-                holidays.add(date_raw)
-    
+
+    try:
+        ws = wb["Feiertage"]
+
+        for row_num, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+            try:
+                if row[0] and len(row) > 2 and row[2] == "NRW":  # Datum und BL prüfen
+                    date_raw = row[0]
+                    if isinstance(date_raw, str):
+                        try:
+                            parsed_date = datetime.strptime(date_raw, '%d.%m.%Y').date()
+                            holidays.add(parsed_date)
+                        except ValueError as e:
+                            print(f"⚠️ Warnung: Ungültiges Datumsformat in Zeile {row_num}: '{date_raw}' - {e}")
+                            continue
+                    elif isinstance(date_raw, datetime):
+                        holidays.add(date_raw.date())
+                    elif isinstance(date_raw, date):
+                        holidays.add(date_raw)
+            except IndexError:
+                print(f"⚠️ Warnung: Unvollständige Zeile {row_num} im Feiertage-Blatt übersprungen")
+                continue
+            except Exception as e:
+                print(f"⚠️ Warnung: Fehler beim Verarbeiten von Zeile {row_num}: {e}")
+                continue
+    except Exception as e:
+        print(f"❌ Fehler beim Laden der Feiertage: {e}")
+        return set()
+
     return holidays
 
 
@@ -154,89 +168,131 @@ def calculate_verguetung(plan_data, holidays):
 
 def process_file(filepath):
     """Verarbeitet die Excel-Datei und schreibt Auswertung."""
-    
-    wb = load_workbook(filepath)
-    
-    # Lade Feiertage
-    holidays = load_holidays(wb)
-    print(f"📅 {len(holidays)} Feiertage geladen")
-    
-    # Lade Plan-Daten
-    if "Plan" not in wb.sheetnames:
-        print("❌ Blatt 'Plan' nicht gefunden!")
+
+    # Load workbook
+    try:
+        wb = load_workbook(filepath)
+    except FileNotFoundError:
+        print(f"❌ Fehler: Datei '{filepath}' nicht gefunden")
         return
-    
-    plan_ws = wb["Plan"]
-    plan_data = []
-    
-    for row in plan_ws.iter_rows(min_row=2, values_only=True):
-        if row[0]:  # Wenn Datum vorhanden
-            datum_raw = row[0]
-            mitarbeiter = row[1] if len(row) > 1 else None
-            
-            # Parse Datum (kann String oder date sein)
-            if isinstance(datum_raw, str):
-                try:
-                    datum = datetime.strptime(datum_raw, '%d.%m.%Y').date()
-                except:
-                    continue
-            elif isinstance(datum_raw, datetime):
-                datum = datum_raw.date()
-            elif isinstance(datum_raw, date):
-                datum = datum_raw
-            else:
+    except PermissionError:
+        print(f"❌ Fehler: Keine Berechtigung zum Lesen der Datei '{filepath}'")
+        return
+    except Exception as e:
+        print(f"❌ Fehler beim Laden der Datei '{filepath}': {e}")
+        return
+
+    try:
+        # Lade Feiertage
+        holidays = load_holidays(wb)
+        print(f"📅 {len(holidays)} Feiertage geladen")
+
+        # Lade Plan-Daten
+        if "Plan" not in wb.sheetnames:
+            print("❌ Blatt 'Plan' nicht gefunden!")
+            return
+
+        plan_ws = wb["Plan"]
+        plan_data = []
+
+        for row_num, row in enumerate(plan_ws.iter_rows(min_row=2, values_only=True), start=2):
+            try:
+                if row[0]:  # Wenn Datum vorhanden
+                    datum_raw = row[0]
+                    mitarbeiter = row[1] if len(row) > 1 else None
+
+                    # Parse Datum (kann String oder date sein)
+                    if isinstance(datum_raw, str):
+                        try:
+                            datum = datetime.strptime(datum_raw, '%d.%m.%Y').date()
+                        except ValueError as e:
+                            print(f"⚠️ Warnung: Ungültiges Datumsformat in Zeile {row_num}: '{datum_raw}' - übersprungen")
+                            continue
+                    elif isinstance(datum_raw, datetime):
+                        datum = datum_raw.date()
+                    elif isinstance(datum_raw, date):
+                        datum = datum_raw
+                    else:
+                        print(f"⚠️ Warnung: Unbekannter Datumstyp in Zeile {row_num}: {type(datum_raw)} - übersprungen")
+                        continue
+
+                    if mitarbeiter:
+                        plan_data.append((datum, mitarbeiter))
+            except Exception as e:
+                print(f"⚠️ Warnung: Fehler beim Verarbeiten von Plan-Zeile {row_num}: {e}")
                 continue
-            
-            if mitarbeiter:
-                plan_data.append((datum, mitarbeiter))
-    
-    print(f"📋 {len(plan_data)} Einträge im Plan")
-    
-    # Berechne Vergütung
-    results = calculate_verguetung(plan_data, holidays)
-    
-    # Schreibe Auswertung
-    if "Auswertung" not in wb.sheetnames:
-        print("❌ Blatt 'Auswertung' nicht gefunden!")
+
+        print(f"📋 {len(plan_data)} Einträge im Plan")
+
+        if not plan_data:
+            print("⚠️ Warnung: Keine gültigen Plan-Einträge gefunden")
+
+        # Berechne Vergütung
+        try:
+            results = calculate_verguetung(plan_data, holidays)
+        except Exception as e:
+            print(f"❌ Fehler bei der Vergütungsberechnung: {e}")
+            return
+
+        # Schreibe Auswertung
+        if "Auswertung" not in wb.sheetnames:
+            print("❌ Blatt 'Auswertung' nicht gefunden!")
+            return
+
+        try:
+            auswertung_ws = wb["Auswertung"]
+
+            # Lösche alte Daten (ab Zeile 2)
+            auswertung_ws.delete_rows(2, auswertung_ws.max_row)
+
+            # Schreibe neue Daten
+            for idx, result in enumerate(results, start=2):
+                auswertung_ws[f"A{idx}"] = result['mitarbeiter']
+                auswertung_ws[f"B{idx}"] = round(result['wt_einheiten'], 2)
+                auswertung_ws[f"C{idx}"] = round(result['we_freitag'], 2)
+                auswertung_ws[f"D{idx}"] = round(result['we_andere'], 2)
+                auswertung_ws[f"E{idx}"] = round(result['we_gesamt'], 2)
+                auswertung_ws[f"F{idx}"] = result['schwelle_erreicht']
+                auswertung_ws[f"G{idx}"] = round(result['abzug_freitag'], 2)
+                auswertung_ws[f"H{idx}"] = round(result['abzug_andere'], 2)
+                auswertung_ws[f"I{idx}"] = round(result['we_bezahlt'], 2)
+                auswertung_ws[f"J{idx}"] = round(result['auszahlung_wt'], 2)
+                auswertung_ws[f"K{idx}"] = round(result['auszahlung_we'], 2)
+                auswertung_ws[f"L{idx}"] = round(result['auszahlung_gesamt'], 2)
+
+                # Formatierung für Schwelle
+                if result['schwelle_erreicht'] == 'JA':
+                    auswertung_ws[f"F{idx}"].fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
+                else:
+                    auswertung_ws[f"F{idx}"].fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
+        except Exception as e:
+            print(f"❌ Fehler beim Schreiben der Auswertung: {e}")
+            return
+
+        # Save file
+        try:
+            wb.save(filepath)
+        except PermissionError:
+            print(f"❌ Fehler: Keine Berechtigung zum Speichern der Datei '{filepath}'")
+            return
+        except OSError as e:
+            print(f"❌ Fehler beim Speichern der Datei '{filepath}': {e}")
+            return
+
+        print(f"\n✅ Auswertung geschrieben: {len(results)} Mitarbeiter")
+        print(f"   Datei: {filepath}")
+
+        # Zeige Zusammenfassung
+        print(f"\n{'='*70}")
+        print(f"{'Mitarbeiter':<20} {'WT':<8} {'WE':<8} {'Schwelle':<10} {'Gesamt':>10}")
+        print(f"{'='*70}")
+        for r in results:
+            print(f"{r['mitarbeiter']:<20} {r['wt_einheiten']:>6.1f}  {r['we_gesamt']:>6.1f}  {r['schwelle_erreicht']:<10} {r['auszahlung_gesamt']:>9.2f} €")
+        print(f"{'='*70}")
+
+    except Exception as e:
+        print(f"❌ Unerwarteter Fehler beim Verarbeiten der Datei: {e}")
         return
-    
-    auswertung_ws = wb["Auswertung"]
-    
-    # Lösche alte Daten (ab Zeile 2)
-    auswertung_ws.delete_rows(2, auswertung_ws.max_row)
-    
-    # Schreibe neue Daten
-    for idx, result in enumerate(results, start=2):
-        auswertung_ws[f"A{idx}"] = result['mitarbeiter']
-        auswertung_ws[f"B{idx}"] = round(result['wt_einheiten'], 2)
-        auswertung_ws[f"C{idx}"] = round(result['we_freitag'], 2)
-        auswertung_ws[f"D{idx}"] = round(result['we_andere'], 2)
-        auswertung_ws[f"E{idx}"] = round(result['we_gesamt'], 2)
-        auswertung_ws[f"F{idx}"] = result['schwelle_erreicht']
-        auswertung_ws[f"G{idx}"] = round(result['abzug_freitag'], 2)
-        auswertung_ws[f"H{idx}"] = round(result['abzug_andere'], 2)
-        auswertung_ws[f"I{idx}"] = round(result['we_bezahlt'], 2)
-        auswertung_ws[f"J{idx}"] = round(result['auszahlung_wt'], 2)
-        auswertung_ws[f"K{idx}"] = round(result['auszahlung_we'], 2)
-        auswertung_ws[f"L{idx}"] = round(result['auszahlung_gesamt'], 2)
-        
-        # Formatierung für Schwelle
-        if result['schwelle_erreicht'] == 'JA':
-            auswertung_ws[f"F{idx}"].fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
-        else:
-            auswertung_ws[f"F{idx}"].fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
-    
-    wb.save(filepath)
-    print(f"\n✅ Auswertung geschrieben: {len(results)} Mitarbeiter")
-    print(f"   Datei: {filepath}")
-    
-    # Zeige Zusammenfassung
-    print(f"\n{'='*70}")
-    print(f"{'Mitarbeiter':<20} {'WT':<8} {'WE':<8} {'Schwelle':<10} {'Gesamt':>10}")
-    print(f"{'='*70}")
-    for r in results:
-        print(f"{r['mitarbeiter']:<20} {r['wt_einheiten']:>6.1f}  {r['we_gesamt']:>6.1f}  {r['schwelle_erreicht']:<10} {r['auszahlung_gesamt']:>9.2f} €")
-    print(f"{'='*70}")
 
 
 if __name__ == "__main__":
