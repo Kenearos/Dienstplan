@@ -1,0 +1,18 @@
+# Conftest configuration for the `standards` Policy-as-Code package.
+#
+# Enforces: docs/adr/0004-policy-as-code-opa-conftest.md
+# Followed by: sops/SOP-002-release-process.md, sops/SOP-005-secrets-management.md
+#
+# Config keys mirror conftest's CLI flags (hyphenated). Conftest auto-discovers a
+# `conftest.toml` in the policy directory / working directory, so running
+# `conftest test <manifest>` from `policies/` picks these up with no extra flags.
+#
+# `all-namespaces = true` makes conftest evaluate `deny`/`warn` rules from EVERY
+# Rego package it loads (standards.ci.*, standards.quadlet.*, standards.containerfile.*),
+# so a single `conftest test <manifest>` exercises every relevant policy. Without it,
+# conftest only looks at the `main` namespace and silently ignores our namespaced rules.
+#
+# `policy = "."` points conftest at this directory (run it from `policies/`), so the
+# lib/, ci/, quadlet/ and containerfile/ subtrees are all discovered.
+policy = "."
+all-namespaces = true

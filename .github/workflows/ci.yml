@@ -1,0 +1,44 @@
+# ci.yml — self-contained standards gate (VENDORED model).
+#
+# Rendered verbatim into <repo>/.github/workflows/ by adopt-standard.sh. The
+# standard's Rego policies are vendored into this repo at .standards/policies/
+# (also placed by adopt-standard.sh, pinned to .standards-version), and the gate
+# logic lives in .standards/policy-gate.sh. CI installs conftest and runs the
+# policies LOCALLY — no dependency on a remote (possibly private) standards repo,
+# no cross-account reusable-workflow access, no PAT. Re-run adopt-standard.sh to
+# update the vendored policies when you bump the pin.
+#
+# The same gate runs identically on Forgejo/Woodpecker — see the standard's
+# ci/woodpecker/ (ADR-0002 dual-target CI). Add repo-native jobs (lint/test/build)
+# below the gate; those are language-specific and owned by the repo.
+name: ci
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  standards-gate:
+    runs-on: ubuntu-latest
+    env:
+      CONFTEST_VERSION: "0.68.2"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install conftest (pinned)
+        run: |
+          set -euo pipefail
+          url="https://github.com/open-policy-agent/conftest/releases/download/v${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz"
+          curl -fsSL "$url" | sudo tar -xz -C /usr/local/bin conftest
+          conftest --version
+
+      - name: Policy gate (vendored standards policies)
+        run: bash .standards/policy-gate.sh

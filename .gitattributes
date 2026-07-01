@@ -1,0 +1,43 @@
+# .gitattributes — rendered by adopt-standard.sh (verbatim; no placeholders).
+# Mirrors the standards repo's own root .gitattributes.
+#
+# Normalize to LF in the repository for everything text. Working-copy line
+# endings are pinned per type so MinGW/Git-Bash scripts (LF) and native
+# Windows scripts (CRLF) both work. This overrides core.autocrlf.
+* text=auto eol=lf
+
+# Unix shell / POSIX tooling — MUST stay LF in the working copy
+*.sh    text eol=lf
+*.bash  text eol=lf
+*.bats  text eol=lf
+*.rego  text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.json  text eol=lf
+*.toml  text eol=lf
+*.md    text eol=lf
+*.env   text eol=lf
+Makefile text eol=lf
+.sops.yaml text eol=lf
+
+# Native Windows scripts — CRLF in the working copy
+*.ps1   text eol=crlf
+*.psm1  text eol=crlf
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+
+# Encrypted secret files are text (diffable ciphertext), kept LF
+*.enc.yaml  text eol=lf
+*.enc.json  text eol=lf
+*.sops.yaml text eol=lf
+*.sops.json text eol=lf
+
+# Binary — never touch
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.gz    binary
+*.zip   binary
+*.tar   binary
