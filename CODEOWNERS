@@ -1,0 +1,21 @@
+# CODEOWNERS — rendered by adopt-standard.sh.
+# Review is REQUIRED from an owner before merge (enforce via branch protection
+# on develop/main). Replace Kenearos with your Forgejo/GitHub org handle.
+# See SOP-001 (branch & merge) and CONTRIBUTING.md.
+
+# Default — everything
+*                       @Kenearos
+
+# Governance & decisions — change deliberately
+/docs/                  @Kenearos
+/docs/adr/              @Kenearos
+/sops/                  @Kenearos
+
+# Enforcement & security-relevant paths — always require an owner
+/.github/               @Kenearos
+/ci/                    @Kenearos
+/policies/              @Kenearos
+/secrets/               @Kenearos
+/SECURITY.md            @Kenearos
+/CODEOWNERS             @Kenearos
+/.pre-commit-config.yaml @Kenearos

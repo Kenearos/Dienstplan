@@ -1,0 +1,61 @@
+# .pre-commit-config.yaml — rendered by adopt-standard.sh.
+# Local mirror of the CI gates: hygiene + shell lint + secret scanning + policy.
+# Install:  pre-commit install   |   Run on everything:  pre-commit run -a
+# See ../SECURITY.md (no plaintext secrets) and SOP-001 (branch & merge).
+minimum_pre_commit_version: "3.5.0"
+fail_fast: false
+
+repos:
+  # ── Baseline file hygiene ─────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        # Preserve markdown hard line breaks (two trailing spaces).
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  # ── Shell lint (POSIX / MinGW-safe scripts) ───────────────────────────
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        args: [--severity=warning]
+
+  # ── Secret scanning — no plaintext secrets, ever ──────────────────────
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+
+  # ── Local project hooks (no external pin; degrade gracefully) ─────────
+  - repo: local
+    hooks:
+      # Optional: validate config/manifests against the standard's Rego
+      # policies. Skipped automatically if `conftest` is not installed, so a
+      # missing optional binary never blocks a commit (graceful degradation).
+      - id: conftest
+        name: conftest (policy gate, optional)
+        entry: 'bash -c ''command -v conftest >/dev/null 2>&1 && conftest test --policy policies . || echo "conftest not installed - skipping policy gate"'''
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      # Refuse to commit any *.sops.yaml / *.enc.yaml that is NOT actually
+      # SOPS-encrypted (i.e. missing the `sops:` metadata block). This catches
+      # the classic "saved the plaintext under the encrypted name" mistake.
+      # Implementation note: `grep -L` lists files MISSING the marker (no shell
+      # loop, no nested double quotes) so it survives the YAML/shell quoting layers.
+      # The marker is `sops:` (SOPS-YAML) or `"sops"` (SOPS-JSON).
+      - id: sops-encrypted-check
+        name: sops-encrypted-check (no plaintext under encrypted names)
+        entry: 'bash -c ''bad=$(grep -L -E ''"''"''^sops:|"sops"''"''"'' "$@"); if [ -n "$bad" ]; then echo "ERROR: named encrypted but missing SOPS metadata:"; echo "$bad"; exit 1; fi'' --'
+        language: system
+        files: '\.(sops|enc)\.(yaml|json)$'
